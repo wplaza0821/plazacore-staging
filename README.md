@@ -1,1 +1,1 @@
-Plazacore STAGING — feature/phase4-frontend preview. Not production.
+Plazacore STAGING — Fieldwire/Procore grouped-nav preview (plaza-platform PR #2). Not production.
