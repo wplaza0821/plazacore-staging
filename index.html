@@ -127,6 +127,7 @@
   .gsearch-item .gs-snip { font-size: 11px; color: var(--gray-500); line-height: 1.4; }
   .gsearch-item .gs-snip mark { background: #fff3a0; color: inherit; padding: 0 1px; }
   @media (max-width: 820px) { .gsearch-input { width: 130px; } .gsearch-input:focus { width: 180px; } .gsearch-panel { width: 88vw; } }
+  @media (max-width: 480px) { .gsearch-input { width: 100px; max-width: 32vw; } .gsearch-input:focus { width: 150px; max-width: 60vw; } }
   .role-pill {
     display: inline-flex; align-items: center; gap: 6px;
     background: var(--black); color: #FFFFFF;
@@ -190,16 +191,6 @@
   .bell-item-arrow { flex: 0 0 auto; font-size: 11px; color: var(--gray-300); align-self: center; margin-left: 2px; }
   .bell-item:hover .bell-item-arrow { color: var(--gray-500); }
   .bell-empty { padding: 26px 14px; text-align: center; color: var(--gray-400); font-size: 12px; }
-  .project-select {
-    background: #FFFFFF; color: var(--black);
-    border: 1px solid var(--gray-200); border-radius: var(--radius-sm);
-    padding: 8px 30px 8px 12px; font-family: inherit; font-size: 12px;
-    font-weight: 500; letter-spacing: 0.3px; cursor: pointer;
-    appearance: none; -webkit-appearance: none;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%23020000' d='M0 0l5 6 5-6z' opacity='0.6'/></svg>");
-    background-repeat: no-repeat; background-position: right 10px center;
-    max-width: 280px; text-overflow: ellipsis;
-  }
   /* Left vertical navigation rail (Fieldwire-style). */
   .tabs {
     grid-area: sidebar;
@@ -328,7 +319,92 @@
   .chip:hover { color: var(--black); border-color: var(--black); }
   .chip.active { background: var(--black); color: #fff; border-color: var(--black); }
 
+  /* ---------- Portfolio attention strip ----------
+     Sits above the grid and is a FILTER, not a readout. Each tile narrows the
+     grid to the projects contributing to that number, which is the only reason
+     a count on a landing page earns its space: it has to lead somewhere. */
+  .attn-strip {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 10px; margin-bottom: 18px;
+  }
+  .attn-tile {
+    background: #fff; border: 1px solid var(--gray-200); border-radius: var(--radius);
+    padding: 12px 14px; cursor: pointer; text-align: left; font-family: inherit;
+    transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+    box-shadow: var(--shadow-sm); position: relative; overflow: hidden;
+  }
+  .attn-tile:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); border-color: var(--gray-300); }
+  .attn-tile:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .attn-tile.on { border-color: var(--black); box-shadow: 0 0 0 1px var(--black), var(--shadow-md); }
+  .attn-tile[data-empty="1"] { opacity: .55; cursor: default; }
+  .attn-tile[data-empty="1"]:hover { transform: none; box-shadow: var(--shadow-sm); border-color: var(--gray-200); }
+  .attn-n { font-size: 22px; font-weight: 700; color: var(--black); line-height: 1.1; letter-spacing: -0.5px; }
+  .attn-n.alert { color: var(--red); }
+  .attn-k { font-size: 10px; text-transform: uppercase; letter-spacing: .7px;
+    font-weight: 600; color: var(--gray-400); margin-top: 3px; }
+  .attn-sub { font-size: 11px; color: var(--gray-500); margin-top: 2px; }
+
   .project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+  /* A project that needs something gets a left edge, so the grid can be skimmed
+     down one column rather than read card by card. */
+  .project-card.needs::before {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: var(--red); border-radius: var(--radius) 0 0 var(--radius);
+  }
+  .status-dot { display: inline-block; width: 7px; height: 7px; border-radius: 999px;
+    background: var(--gray-300); margin-right: 6px; vertical-align: middle; }
+  .status-dot.active   { background: var(--accent); }
+  .status-dot.bidding  { background: var(--gray-400); }
+  .status-dot.closeout { background: var(--black); }
+  .status-dot.archived { background: var(--gray-300); }
+  .archived-toggle {
+    background: none; border: none; font-family: inherit; font-size: 12px;
+    color: var(--gray-500); cursor: pointer; padding: 10px 0; text-decoration: underline;
+  }
+  .archived-toggle:hover { color: var(--black); }
+
+  /* ---------- Project switcher ----------
+     Replaces a bare <select> that listed every project, archived included, with
+     no search and no status. Opens on click or Cmd/Ctrl-K from anywhere. */
+  .psw-wrap { position: relative; }
+  .psw-btn {
+    display: flex; align-items: center; gap: 8px; max-width: 280px;
+    background: #FFFFFF; color: var(--black); border: 1px solid var(--gray-200);
+    border-radius: var(--radius-sm); padding: 8px 12px; font-family: inherit;
+    font-size: 12px; font-weight: 500; letter-spacing: .3px; cursor: pointer;
+  }
+  .psw-btn:hover { border-color: var(--gray-300); }
+  .psw-btn .psw-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .psw-kbd {
+    font-size: 9.5px; color: var(--gray-400); border: 1px solid var(--gray-200);
+    border-radius: 3px; padding: 1px 4px; margin-left: auto; white-space: nowrap;
+  }
+  .psw-panel {
+    display: none; position: absolute; top: calc(100% + 6px); right: 0; z-index: 70;
+    width: min(380px, 92vw); background: #fff; border: 1px solid var(--gray-200);
+    border-radius: var(--radius); box-shadow: var(--shadow-lg, 0 10px 30px rgba(2,0,0,.16));
+    overflow: hidden;
+  }
+  .psw-panel.on { display: block; }
+  .psw-search {
+    width: 100%; border: 0; border-bottom: 1px solid var(--gray-200); padding: 11px 13px;
+    font-family: inherit; font-size: 13px; outline: none; color: var(--black);
+  }
+  .psw-list { max-height: 320px; overflow-y: auto; padding: 4px; }
+  .psw-sec { font-size: 9.5px; text-transform: uppercase; letter-spacing: .8px;
+    color: var(--gray-400); font-weight: 600; padding: 8px 9px 4px; }
+  .psw-item {
+    display: flex; align-items: center; gap: 8px; width: 100%; text-align: left;
+    background: none; border: 0; font-family: inherit; padding: 8px 9px;
+    border-radius: var(--radius-sm); cursor: pointer; color: var(--black);
+  }
+  .psw-item:hover, .psw-item.cur { background: var(--gray-100); }
+  .psw-item[aria-selected="true"] { background: var(--accent-bg); }
+  .psw-item .code { font-size: 10.5px; color: var(--gray-400); font-weight: 600;
+    letter-spacing: .6px; min-width: 56px; }
+  .psw-item .nm { font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .psw-item .mk { font-size: 10px; color: var(--gray-400); margin-left: auto; white-space: nowrap; }
+  .psw-none { padding: 18px 13px; font-size: 12px; color: var(--gray-500); text-align: center; }
   .project-card {
     background: #fff; border-radius: var(--radius); border: 1px solid var(--gray-200);
     padding: 18px; cursor: pointer; transition: all 0.15s ease;
@@ -617,6 +693,16 @@
     font-size: 11px; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.5px;
   }
 
+  /* Tablet (iPad portrait/landscape, 769–1024px): narrow the fixed sidebar
+     instead of jumping straight from 232px desktop rail to full mobile
+     collapse at 768px — the 232px rail was cramping usable content width
+     on iPads with no intermediate step. */
+  @media (max-width: 1024px) and (min-width: 769px) {
+    .app { grid-template-columns: 180px 1fr; }
+    .tab { font-size: 13px; padding: 10px 12px; }
+    .brand-sub, .brand-tag { display: none; }
+  }
+
   @media (max-width: 768px) {
     /* Collapse the rail back to a horizontal scroll strip on phones. */
     .app { grid-template-columns: 1fr; grid-template-rows: auto auto 1fr auto; grid-template-areas: "topbar" "sidebar" "main" "footer"; }
@@ -640,7 +726,8 @@
     .brand-sub { display: none; }
     .brand-tag { display: none; }
     .brand-divider { display: none; }
-    .project-select { max-width: 160px; font-size: 11px; }
+    .psw-btn { max-width: 170px; font-size: 11px; }
+    .psw-kbd { display: none; }
     .role-pill { font-size: 9px; padding: 5px 9px; letter-spacing: 1px; }
     .btn-logout { padding: 5px 9px; font-size: 10px; }
     .page-title { font-size: 19px; }
@@ -960,28 +1047,40 @@
       <input id="raName" class="login-input" type="text" placeholder="Full name *" autocomplete="name" />
       <input id="raEmail" class="login-input" type="email" placeholder="Email *" autocomplete="email" />
       <input id="raCompany" class="login-input" type="text" placeholder="Company / Association" autocomplete="organization" />
-      <input id="raPhone" class="login-input" type="tel" placeholder="Phone (mobile, for text updates)" autocomplete="tel" />
       <textarea id="raMessage" class="login-input" rows="3" placeholder="Project name / what access do you need?" style="text-align:left; resize:vertical; font-family:inherit;"></textarea>
 
-      <!-- SMS opt-in (A2P 10DLC Call-to-Action). Unchecked by default — express
-           written consent only. The disclosure text below is stored verbatim
-           with the request as consent evidence; keep the wording and the
-           #raSmsConsentText element in sync. -->
-      <label id="raSmsConsentRow" for="raSmsConsent" style="display:flex; align-items:flex-start; gap:9px; margin:14px 0 4px; cursor:pointer; text-align:left;">
-        <input id="raSmsConsent" type="checkbox" style="margin-top:2px; flex:0 0 auto; width:16px; height:16px; cursor:pointer;" />
-        <span id="raSmsConsentText" style="font-size:11.5px; line-height:1.5; color:var(--gray-600,#666);">
-          I agree to receive text messages from Plaza &amp; Associates, LLC about my
-          project — task assignments, document uploads, and inspection scheduling.
-          Message frequency varies. Message and data rates may apply.
-          Reply STOP to opt out or HELP for help. Consent is not a condition of
-          purchase or of receiving portal access. See our
-          <a href="https://www.plazaandassociates.com/terms-and-conditions" target="_blank" rel="noopener" style="color:var(--gray-600,#666); text-decoration:underline;">Terms &amp; Conditions</a>
-          and
-          <a href="https://www.plazaandassociates.com/privacy-policy" target="_blank" rel="noopener" style="color:var(--gray-600,#666); text-decoration:underline;">Privacy Policy</a>.
-        </span>
-      </label>
-      <div id="raSmsConsentHint" style="font-size:11px; line-height:1.45; color:var(--gray-400,#aaa); margin:0 0 12px 26px; text-align:left;">
-        Optional — leave unchecked to receive email only.
+      <!-- SMS opt-in (A2P 10DLC Call-to-Action).
+           The mobile number lives INSIDE this block, immediately above the
+           checkbox, so there is no ambiguity about which number is being given
+           permission — it previously sat three fields higher, separated from the
+           consent by the message box. Both the consumer and a carrier reviewing
+           the campaign now read one grouped statement.
+           Unchecked by default — express written consent only. The disclosure is
+           stored verbatim with the request as consent evidence, and because the
+           number is echoed inside #raSmsConsentText, that evidence records WHICH
+           number consented. Keep the wording and that element in sync. -->
+      <div id="raSmsBlock" style="border:1px solid var(--gray-200,#e5e5e5); border-radius:6px; padding:12px 13px; margin:14px 0 12px; text-align:left;">
+        <div style="font-size:10.5px; font-weight:600; letter-spacing:0.9px; text-transform:uppercase; color:var(--gray-500,#888); margin-bottom:9px;">Text message updates (optional)</div>
+        <label for="raPhone" style="display:block; font-size:12px; color:var(--gray-600,#666); margin-bottom:5px;">Mobile number</label>
+        <input id="raPhone" class="login-input" type="tel" placeholder="(305) 555-0123" autocomplete="tel" inputmode="tel" style="margin-bottom:0;" />
+        <label id="raSmsConsentRow" for="raSmsConsent" style="display:flex; align-items:flex-start; gap:9px; margin:12px 0 4px; cursor:pointer; text-align:left;">
+          <input id="raSmsConsent" type="checkbox" style="margin-top:2px; flex:0 0 auto; width:16px; height:16px; cursor:pointer;" />
+          <span id="raSmsConsentText" style="font-size:11.5px; line-height:1.5; color:var(--gray-600,#666);">
+            I agree to receive text messages from Plaza &amp; Associates, LLC at the
+            mobile number I entered above<span id="raSmsNumberEcho"></span> about my
+            project — task assignments, document uploads, and inspection scheduling.
+            Message frequency varies. Message and data rates may apply.
+            Reply STOP to opt out or HELP for help. Consent is not a condition of
+            purchase or of receiving portal access. See our
+            <a href="https://www.plazaandassociates.com/terms-and-conditions" target="_blank" rel="noopener" style="color:var(--gray-600,#666); text-decoration:underline;">Terms &amp; Conditions</a>
+            and
+            <a href="https://www.plazaandassociates.com/privacy-policy" target="_blank" rel="noopener" style="color:var(--gray-600,#666); text-decoration:underline;">Privacy Policy</a>.
+          </span>
+        </label>
+        <div id="raSmsConsentHint" style="font-size:11px; line-height:1.45; color:var(--gray-400,#aaa); margin:0 0 0 26px; text-align:left;">
+          Optional — leave unchecked to receive email only. A number here is used
+          for text updates only if you check the box.
+        </div>
       </div>
 
       <button type="button" class="login-btn" id="raSubmitBtn" onclick="submitAccessRequest()">Request Access</button>
@@ -1036,7 +1135,19 @@
         <input type="search" id="gsearchInput" class="gsearch-input" placeholder="Search reports &amp; documents…" autocomplete="off" aria-label="Global search" />
         <div class="gsearch-panel" id="gsearchPanel" role="listbox" aria-label="Search results"></div>
       </div>
-      <select id="projectSelect" class="project-select" aria-label="Active project" data-role-hide="contractor"></select>
+      <div class="psw-wrap" id="pswWrap" data-role-hide="contractor">
+        <button type="button" id="pswBtn" class="psw-btn" aria-haspopup="listbox"
+                aria-expanded="false" aria-label="Switch active project">
+          <span class="status-dot" id="pswDot"></span>
+          <span class="psw-name" id="pswName">No project</span>
+          <span class="psw-kbd" id="pswKbd">⌘K</span>
+        </button>
+        <div class="psw-panel" id="pswPanel" role="dialog" aria-label="Switch project">
+          <input type="search" id="pswSearch" class="psw-search" autocomplete="off"
+                 placeholder="Search projects by name, code or client…" aria-label="Search projects" />
+          <div class="psw-list" id="pswList" role="listbox" aria-label="Projects"></div>
+        </div>
+      </div>
       <span id="contractorProjectLabel" class="role-pill contractor" data-role-hide="owner" style="display:none;"></span>
       <span class="bell-wrap" id="bellWrap" style="display:none;">
         <button type="button" class="btn-bell" id="bellBtn" aria-label="Notifications" onclick="toggleNotifPanel(event)">🔔<span class="bell-badge" id="bellBadge">0</span></button>
@@ -1099,14 +1210,17 @@
         <button class="btn btn-primary perm-edit-projects" onclick="openProjectModal()">＋ New Project</button>
       </div>
 
+      <div class="attn-strip" id="attnStrip"></div>
+
       <div class="filter-bar" id="projectFilters">
-        <span class="chip active" data-filter="all">All</span>
-        <span class="chip" data-filter="active">Active</span>
+        <span class="chip" data-filter="all">All</span>
+        <span class="chip active" data-filter="active">Active</span>
         <span class="chip" data-filter="bidding">Bidding</span>
         <span class="chip" data-filter="closeout">Closeout</span>
       </div>
 
       <div id="projectGrid" class="project-grid"></div>
+      <div id="archivedRow"></div>
     </section>
 
     <!-- ========== SOV / PAY APPS ========== -->
@@ -1472,8 +1586,14 @@
           <div class="page-subtitle">Day-by-day site record</div>
           <div class="page-context-pill" id="daily-context"></div>
         </div>
-        <button class="btn btn-primary perm-edit-daily" onclick="openDailyModal()">＋ New Entry</button>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button class="btn btn-secondary perm-edit-daily" onclick="document.getElementById('dl-scan-file').click()">📄 Upload Log Scan</button>
+          <input type="file" id="dl-scan-file" accept=".pdf,image/jpeg,image/png" style="display:none" onchange="uploadDailyScan(this)" />
+          <button class="btn btn-primary perm-edit-daily" onclick="openDailyModal()">＋ New Entry</button>
+        </div>
       </div>
+
+      <div id="dailyScanList"></div>
 
       <div class="toolbar">
         <input type="text" class="search" id="dailySearch" placeholder="Search by inspector, work, notes…" />
@@ -1929,7 +2049,14 @@ let AUTH = null;
 const STATE = {
   activeProjectId: null,
   activeTab: 'projects',
-  projectFilter: 'all',
+  /* A "current projects" landing opens on current projects. 'all' put archived
+     work in front of live work on every load. */
+  projectFilter: 'active',
+  attnFilter: null,        // which attention tile is narrowing the grid, if any
+  attnPrevFilter: null,    // status chip a tile overrode, restored when it clears
+  showArchived: false,
+  pswOpen: false,
+  pswIdx: -1,            // highlighted row in the switcher, -1 = none
   rfiFilter: 'all',
   subFilter: 'all',
   docFilter: 'all',
@@ -2011,6 +2138,22 @@ function authFromNativeSession(session) {
   };
 }
 
+// Map a native contractor session -> contractors.id. Match on contact_email
+// within the session's project; fall back to the project's only active
+// contractor. Returns null if it can't be determined.
+async function resolveNativeContractorId(a) {
+  try {
+    if (!a || !a.projectId) return null;
+    // Contractors can't SELECT from `contractors` (RLS — the table holds every
+    // contractor's access_token), so a direct query returned [] and this
+    // resolver always came back null. The SECURITY DEFINER RPC does the
+    // email match server-side and returns only the caller's own id.
+    const { data, error } = await sb.rpc('resolve_my_contractor_id');
+    if (error) { console.warn('resolve_my_contractor_id', error); return null; }
+    return data || null;
+  } catch (e) { return null; }
+}
+
 // Make project/role re-assignments take effect INSTANTLY (on next page load)
 // instead of only after a manual sign-out. The Access Token Hook bakes
 // project_id/user_role/perms into the JWT at mint time, and RLS reads them from
@@ -2048,29 +2191,29 @@ async function tryBootAuth() {
   const params = new URLSearchParams(window.location.search);
   const key = params.get('key');
   if (key) {
-    const { data: contractor, error } = await sb
-      .from('contractors')
-      .select('*, projects(*)')
-      .eq('access_token', key)
-      .eq('active', true)
-      .maybeSingle();
-    if (error) { handleSbError(error, 'Token lookup failed'); return false; }
-    if (contractor) {
-      const out = await mintToken({ mode: 'contractor', token: key });
-      if (!out || !out.jwt) { handleSbError({ message: 'Auth failed' }, 'Token rejected'); return false; }
+    // The access_token lookup happens SERVER-SIDE only. auth-token runs with the
+    // service role, validates the token and returns the contractor's identity.
+    // Doing the lookup here with the anon key would require an open SELECT
+    // policy on `contractors`, which exposed every contractor's access_token to
+    // anyone holding the publishable key (fixed 2026-09-08).
+    const out = await mintToken({ mode: 'contractor', token: key });
+    if (out && out.jwt) {
+      const claims = decodeJwt(out.jwt) || {};
       setSbAuth(out.jwt);
       AUTH = {
         role: 'contractor',
-        name: contractor.name,
-        contractorId: contractor.id,
-        projectId: contractor.project_id,
-        permissions: contractor.permissions || defaultContractorModules(),
+        name: out.name || claims.name || '',
+        contractorId: claims.contractor_id || null,
+        projectId: out.project_id || claims.project_id || null,
+        permissions: out.permissions || claims.perms || defaultContractorModules(),
         token: key,
         jwt: out.jwt,
       };
       sessionStorage.setItem(SESSION_AUTH_KEY, JSON.stringify(AUTH));
       return true;
     }
+    handleSbError({ message: 'Auth failed' }, 'Token rejected');
+    return false;
   }
   // Phase B: native (email/password) session takes priority on boot/restore.
   try {
@@ -2102,6 +2245,10 @@ async function tryBootAuth() {
       const a = authFromNativeSession(session);
       if (a && a.role && a.role !== 'none') {
         AUTH = a;
+        // Native (email/password) contractor logins carry NO contractor_id claim
+        // — profiles has no such column. Resolve the contractors row by email so
+        // draft creation / edit gating knows who this is (Tareec 2026-09-11).
+        if (a.role === 'contractor') AUTH.contractorId = await resolveNativeContractorId(a);
         return true;
       }
       // inactive/unknown native user -> drop the session, fall through to login.
@@ -2125,6 +2272,11 @@ async function tryBootAuth() {
         }
         setSbAuth(out.jwt);
         saved.jwt = out.jwt;
+        // Re-derive identity from the fresh claims so a session saved by an
+        // older build never carries a null contractorId into a new draft.
+        const claims = decodeJwt(out.jwt) || {};
+        saved.contractorId = claims.contractor_id || saved.contractorId || null;
+        saved.projectId = out.project_id || claims.project_id || saved.projectId || null;
         sessionStorage.setItem(SESSION_AUTH_KEY, JSON.stringify(saved));
       } else if (saved.role === 'owner' && !saved.jwt) {
         sessionStorage.removeItem(SESSION_AUTH_KEY);
@@ -2165,6 +2317,7 @@ async function handleNativeLogin(email, password) {
     return { ok: false, error: 'Account is inactive or not provisioned. Contact the administrator.' };
   }
   AUTH = a;
+  if (a.role === 'contractor') AUTH.contractorId = await resolveNativeContractorId(a);
   return { ok: true };
 }
 
@@ -2391,6 +2544,7 @@ const DATA = {
   deficiencies: [],
   deficiency_followups: [],
   daily_reports: [],
+  dailyLogDocs: [],   // uploaded daily-log scans; daily_reports link back via source_document_id
   milestones: [],
   scheduleTasks: [],    // Phase 7: MS Project / Gantt task rows
   scheduleImports: [],  // Phase 7: uploaded schedule files + AI analysis
@@ -2402,7 +2556,12 @@ const DATA = {
 
 async function loadAllData() {
   const projP = sb.from('projects').select('*').order('code');
-  const conP  = sb.from('contractors').select('*').order('created_at', { ascending: false });
+  // NEVER select('*') here: access_token is column-revoked from anon/authenticated
+  // (phase4/migration-column-privileges-contractor-token.sql). Owners read a single
+  // token on demand through the plz_contractor_token() RPC instead.
+  const conP  = sb.from('contractors')
+    .select('id,name,contact_email,contact_phone,project_id,permissions,active,created_at,revoked_at')
+    .order('created_at', { ascending: false });
   const sovP  = sb.from('sov_items').select('*').order('sort_order');
   const paP   = sb.from('pay_apps').select('*').order('pay_app_number');
   const palP  = sb.from('pay_app_lines').select('*');
@@ -2419,6 +2578,8 @@ async function loadAllData() {
   const dfP   = sb.from('deficiencies').select('*').order('created_at', { ascending: false });
   const dfuP  = sb.from('deficiency_followups').select('*').order('created_at', { ascending: false });
   const dlP   = sb.from('daily_reports').select('*').order('report_date', { ascending: false });
+  // Uploaded daily-log scans (the record of authority). Soft if not yet deployed.
+  const dldP  = sb.from('daily_log_documents').select('*').order('uploaded_at', { ascending: false });
   const msP   = sb.from('milestones').select('*').order('sort_order', { ascending: true });
   const stP   = sb.from('schedule_tasks').select('*').order('sort_order', { ascending: true });
   const siP   = sb.from('schedule_imports').select('*').order('uploaded_at', { ascending: false });
@@ -2439,8 +2600,8 @@ async function loadAllData() {
   // roles just get an empty result. Table may not exist yet -> soft.
   const arP = sb.from('access_requests').select('*').order('created_at', { ascending: false });
 
-  const [proj, con, sov, pa, pal, lw, pad, rf, sub, co, doc, tk, ph, fr, df, dfu, dl, ms, st, si, prf, dash, tpl, usr, pm, sf, ar] = await Promise.all([
-    projP, conP, sovP, paP, palP, lwP, padP, rfP, subP, coP, docP, tkP, phP, frP, dfP, dfuP, dlP, msP, stP, siP, prfP, dashP, tplP, usersP, pmP, sfP, arP
+  const [proj, con, sov, pa, pal, lw, pad, rf, sub, co, doc, tk, ph, fr, df, dfu, dl, dld, ms, st, si, prf, dash, tpl, usr, pm, sf, ar] = await Promise.all([
+    projP, conP, sovP, paP, palP, lwP, padP, rfP, subP, coP, docP, tkP, phP, frP, dfP, dfuP, dlP, dldP, msP, stP, siP, prfP, dashP, tplP, usersP, pmP, sfP, arP
   ]);
   if (proj.error) handleSbError(proj.error, 'Loading projects');
   if (con.error)  handleSbError(con.error, 'Loading contractors');
@@ -2484,6 +2645,8 @@ async function loadAllData() {
   DATA.deficiencies  = df.data || [];
   DATA.deficiency_followups = dfu.data || [];
   DATA.daily_reports = dl.data || [];
+  softErr(dld, 'Loading daily log scans');
+  DATA.dailyLogDocs  = (dld && !dld.error && Array.isArray(dld.data)) ? dld.data : [];
   DATA.milestones    = ms.data || [];
   DATA.scheduleTasks   = st.data || [];
   DATA.scheduleImports = si.data || [];
@@ -2523,9 +2686,11 @@ const RELOADERS = {
   deficiencies:   async () => { const r = await sb.from('deficiencies').select('*').order('created_at', { ascending: false }); if (!r.error) DATA.deficiencies = r.data || []; },
   deficiencyFollowups: async () => { const r = await sb.from('deficiency_followups').select('*').order('created_at', { ascending: false }); if (!r.error) DATA.deficiency_followups = r.data || []; },
   dailyReports:   async () => { const r = await sb.from('daily_reports').select('*').order('report_date', { ascending: false }); if (!r.error) DATA.daily_reports = r.data || []; },
+  dailyLogDocs:   async () => { const r = await sb.from('daily_log_documents').select('*').order('uploaded_at', { ascending: false }); if (!r.error) DATA.dailyLogDocs = r.data || []; },
   milestones:     async () => { const r = await sb.from('milestones').select('*').order('sort_order', { ascending: true }); if (!r.error) DATA.milestones = r.data || []; },
   profiles:       async () => { const r = await sb.from('profiles').select('*').order('created_at', { ascending: false }); if (!r.error) DATA.profiles = r.data || []; },
   accessRequests: async () => { const r = await sb.from('access_requests').select('*').order('created_at', { ascending: false }); if (!r.error) DATA.accessRequests = r.data || []; },
+  payApps:        async () => { const r = await sb.from('pay_apps').select('*').order('pay_app_number'); if (!r.error) DATA.payApps = r.data || []; },
   dashboard:      async () => { const r = await sb.rpc('plz_dashboard'); if (r && !r.error && r.data) DATA.dashboard = r.data; },
 };
 async function reloadData(...keys) {
@@ -2698,24 +2863,148 @@ CSV_EXPORTS.forEach(([tableId, label, searchId]) => {
 /* =========================================================================
    PROJECT SELECTOR
    ========================================================================= */
-function renderProjectSelect() {
-  const sel = document.getElementById('projectSelect');
-  const list = isContractor()
+/* The project a user can act on. Contractors are scoped to exactly one. */
+function switchableProjects() {
+  return isContractor()
     ? DATA.projects.filter(p => p.id === AUTH.projectId)
     : DATA.projects;
-  if (!list.length) { sel.innerHTML = '<option>No projects</option>'; return; }
+}
+
+/* Recently-opened projects, most recent first. A working week touches three or
+   four projects out of a book of dozens, so the list you actually need is short
+   and it is not alphabetical. Per-browser only; nothing here is worth a table. */
+const PSW_RECENT_KEY = 'plaza_recent_projects_v1';
+const PSW_RECENT_MAX = 5;
+function pswRecent() {
+  try { const v = JSON.parse(localStorage.getItem(PSW_RECENT_KEY) || '[]');
+        return Array.isArray(v) ? v : []; } catch (e) { return []; }
+}
+function pswPushRecent(id) {
+  if (!id) return;
+  try {
+    const next = [id, ...pswRecent().filter(x => x !== id)].slice(0, PSW_RECENT_MAX);
+    localStorage.setItem(PSW_RECENT_KEY, JSON.stringify(next));
+  } catch (e) { /* private window / blocked storage — the switcher still works */ }
+}
+
+function renderProjectSelect() {
+  const list = switchableProjects();
   if (!STATE.activeProjectId || !list.some(p => p.id === STATE.activeProjectId)) {
-    STATE.activeProjectId = list[0].id;
+    STATE.activeProjectId = list[0] ? list[0].id : null;
   }
-  sel.innerHTML = list.map(p =>
-    `<option value="${p.id}" ${p.id === STATE.activeProjectId ? 'selected' : ''}>${escapeHtml(p.code)} — ${escapeHtml(p.name)}</option>`
-  ).join('');
+  const cur = list.find(p => p.id === STATE.activeProjectId) || null;
+  const nameEl = document.getElementById('pswName');
+  const dotEl  = document.getElementById('pswDot');
+  if (nameEl) nameEl.textContent = cur ? `${cur.code} — ${cur.name}` : 'No project';
+  if (dotEl)  dotEl.className = 'status-dot ' + (cur ? (cur.status || '') : '');
+  const btn = document.getElementById('pswBtn');
+  if (btn) btn.title = cur ? `${cur.code} — ${cur.name}` : 'No project selected';
+  if (STATE.pswOpen) pswRenderList();
   renderRoleIndicator();
 }
-document.getElementById('projectSelect').addEventListener('change', e => {
-  STATE.activeProjectId = e.target.value;
+
+function pswRenderList() {
+  const box = document.getElementById('pswList');
+  if (!box) return;
+  const q = (document.getElementById('pswSearch')?.value || '').trim().toLowerCase();
+  const all = switchableProjects();
+  const match = p => !q || [p.code, p.name, p.client, p.address]
+    .some(v => String(v || '').toLowerCase().includes(q));
+  const hits = all.filter(match);
+  if (!hits.length) {
+    box.innerHTML = `<div class="psw-none">No project matches “${escapeHtml(q)}”.</div>`;
+    STATE.pswIdx = -1;
+    return;
+  }
+  /* Recents lead, but only when the user has not typed: once there is a query
+     the ranking that matters is "does it match", and a recents section on top
+     of search results just hides the answer. */
+  const recents = q ? [] : pswRecent().map(id => hits.find(p => p.id === id)).filter(Boolean);
+  const rest = hits.filter(p => !recents.includes(p));
+  const row = (p) => {
+    const cur = p.id === STATE.activeProjectId;
+    return `<button type="button" class="psw-item${cur ? ' cur' : ''}" role="option"
+        aria-selected="false" data-id="${escapeHtml(p.id)}" onclick="pswPick('${escapeHtml(p.id)}')">
+      <span class="status-dot ${escapeHtml(p.status || '')}"></span>
+      <span class="code">${escapeHtml(p.code || '')}</span>
+      <span class="nm">${escapeHtml(p.name || '')}</span>
+      ${cur ? '<span class="mk">current</span>' : ''}
+    </button>`;
+  };
+  let h = '';
+  if (recents.length) {
+    h += `<div class="psw-sec">Recent</div>` + recents.map(row).join('');
+    if (rest.length) h += `<div class="psw-sec">All projects</div>`;
+  }
+  h += rest.map(row).join('');
+  box.innerHTML = h;
+  STATE.pswIdx = -1;
+}
+
+function pswOpen() {
+  const panel = document.getElementById('pswPanel');
+  const wrap  = document.getElementById('pswWrap');
+  if (!panel || !wrap || wrap.offsetParent === null) return;   // hidden for contractors
+  STATE.pswOpen = true;
+  panel.classList.add('on');
+  document.getElementById('pswBtn')?.setAttribute('aria-expanded', 'true');
+  const box = document.getElementById('pswSearch');
+  if (box) { box.value = ''; box.focus(); }
+  pswRenderList();
+}
+function pswClose() {
+  STATE.pswOpen = false;
+  document.getElementById('pswPanel')?.classList.remove('on');
+  document.getElementById('pswBtn')?.setAttribute('aria-expanded', 'false');
+}
+function pswPick(id) {
+  if (isContractor() && id !== AUTH.projectId) return;
+  STATE.activeProjectId = id;
+  pswPushRecent(id);
+  pswClose();
   render();
+}
+window.pswPick = pswPick;
+
+/* Keyboard: ArrowUp/Down move a highlight, Enter takes it, Escape closes.
+   The highlight is tracked on STATE rather than read back off the DOM so that
+   retyping a query cannot leave it pointing at a row that no longer exists. */
+function pswNav(delta) {
+  const items = [...document.querySelectorAll('#pswList .psw-item')];
+  if (!items.length) return;
+  STATE.pswIdx = (STATE.pswIdx + delta + items.length) % items.length;
+  items.forEach((el, i) => el.setAttribute('aria-selected', String(i === STATE.pswIdx)));
+  items[STATE.pswIdx].scrollIntoView({ block: 'nearest' });
+}
+
+document.getElementById('pswBtn')?.addEventListener('click', (e) => {
+  e.stopPropagation();
+  STATE.pswOpen ? pswClose() : pswOpen();
 });
+document.getElementById('pswSearch')?.addEventListener('input', pswRenderList);
+document.getElementById('pswPanel')?.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowDown') { e.preventDefault(); pswNav(1); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); pswNav(-1); }
+  else if (e.key === 'Enter') {
+    const items = [...document.querySelectorAll('#pswList .psw-item')];
+    const el = items[STATE.pswIdx] || items[0];
+    if (el) { e.preventDefault(); pswPick(el.dataset.id); }
+  } else if (e.key === 'Escape') { e.preventDefault(); pswClose(); document.getElementById('pswBtn')?.focus(); }
+});
+document.addEventListener('click', (e) => {
+  if (STATE.pswOpen && !e.target.closest('#pswWrap')) pswClose();
+});
+document.addEventListener('keydown', (e) => {
+  if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
+    e.preventDefault();
+    STATE.pswOpen ? pswClose() : pswOpen();
+  }
+});
+/* Windows and Linux read ⌘ as a Mac key and would be told the wrong shortcut. */
+if (!/Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent)) {
+  const k = document.getElementById('pswKbd');
+  if (k) k.textContent = 'Ctrl K';
+}
 
 /* =========================================================================
    PROJECTS PAGE
@@ -2735,34 +3024,152 @@ function projectProgress(p) {
   return 0;
 }
 
-function renderProjects() {
-  const grid = document.getElementById('projectGrid');
-  const filter = STATE.projectFilter;
-  const base = isContractor()
+/* The authoritative per-project rollup from the plz_dashboard() RPC, with the
+   local fallback the card has always used when the RPC has not answered yet. */
+function projectRollup(p) {
+  const d = (DATA.dashboard || []).find(x => x.project_id === p.id) || null;
+  if (d) return {
+    rfis:     d.open_rfis || 0,
+    subs:     d.pending_submittals || 0,
+    defs:     d.open_deficiencies || 0,
+    overdue:  d.overdue_rfis || 0,
+    critical: d.critical_defs || 0,
+    reports:  d.reports_this_month || 0,
+    live: true,
+  };
+  return {
+    rfis: DATA.rfis.filter(r => r.project_id === p.id && r.status === 'open').length,
+    subs: DATA.submittals.filter(x => x.project_id === p.id && x.status === 'pending').length,
+    defs: 0, overdue: 0, critical: 0, reports: 0, live: false,
+  };
+}
+
+/* The four things that actually pull a principal back into a project. "Quiet"
+   is in the list on purpose: a live project with no field report this month is
+   the failure nobody gets alerted about, because nothing happened. */
+const ATTN_DEFS = [
+  { key: 'overdue',  label: 'Overdue RFIs',   sub: 'past due date',        alert: true,
+    n: r => r.overdue },
+  { key: 'critical', label: 'Critical defects', sub: 'need a decision',    alert: true,
+    n: r => r.critical },
+  { key: 'subs',     label: 'Submittals',     sub: 'awaiting review',      alert: false,
+    n: r => r.subs },
+  { key: 'quiet',    label: 'Quiet projects', sub: 'no report this month', alert: false,
+    n: r => 0, project: (p, r) => p.status === 'active' && r.live && r.reports === 0 },
+];
+
+function visibleProjects() {
+  return isContractor()
     ? DATA.projects.filter(p => p.id === AUTH.projectId)
     : DATA.projects;
-  const list = base.filter(p => filter === 'all' || p.status === filter);
+}
+
+function renderAttentionStrip() {
+  const el = document.getElementById('attnStrip');
+  if (!el) return;
+  /* Counted across the whole portfolio, never the current filter: the point of
+     the strip is to show what you would otherwise not be looking at. */
+  const base = visibleProjects().filter(p => p.status !== 'archived');
+  const totals = {};
+  for (const def of ATTN_DEFS) {
+    totals[def.key] = base.reduce((a, p) => {
+      const r = projectRollup(p);
+      return a + (def.project ? (def.project(p, r) ? 1 : 0) : def.n(r));
+    }, 0);
+  }
+  el.innerHTML = ATTN_DEFS.map(def => {
+    const n = totals[def.key];
+    const on = STATE.attnFilter === def.key;
+    return `<button type="button" class="attn-tile${on ? ' on' : ''}"
+        data-attn="${def.key}" data-empty="${n ? 0 : 1}" ${n ? '' : 'tabindex="-1"'}
+        aria-pressed="${on}"
+        title="${n ? 'Show only the projects behind this number' : 'Nothing outstanding'}">
+      <div class="attn-n${def.alert && n ? ' alert' : ''}">${n}</div>
+      <div class="attn-k">${escapeHtml(def.label)}</div>
+      <div class="attn-sub">${escapeHtml(def.sub)}</div>
+    </button>`;
+  }).join('');
+}
+
+/* Does this project contribute to the selected attention tile? */
+function matchesAttn(p) {
+  if (!STATE.attnFilter) return true;
+  const def = ATTN_DEFS.find(d => d.key === STATE.attnFilter);
+  if (!def) return true;
+  const r = projectRollup(p);
+  return def.project ? def.project(p, r) : def.n(r) > 0;
+}
+
+function renderProjects() {
+  renderAttentionStrip();
+  const grid = document.getElementById('projectGrid');
+  const filter = STATE.projectFilter;
+  const base = visibleProjects();
+  /* Archived work is real history but it is not "current projects". It stays
+     one click away instead of competing for the top of the grid.
+
+     Archived rows bypass the status chip rather than being filtered by it: the
+     chip says which CURRENT work to show, and running archived through it too
+     meant "Show 1 archived project" revealed nothing whenever the chip was set
+     to anything but All. */
+  const archived = base.filter(p => p.status === 'archived');
+  let list = base
+    .filter(p => p.status === 'archived'
+      ? (STATE.showArchived || filter === 'archived')
+      : (filter === 'all' || p.status === filter))
+    .filter(matchesAttn);
+
+  /* Projects that need something sort to the front. Within each group, most
+     pressing first, then by code so the order is stable between renders. */
+  const urgency = p => { const r = projectRollup(p); return (r.overdue * 10) + (r.critical * 5) + r.subs; };
+  list = list.slice().sort((a, b) => {
+    const ua = urgency(a), ub = urgency(b);
+    if (ua !== ub) return ub - ua;
+    return String(a.code || '').localeCompare(String(b.code || ''), undefined, { numeric: true });
+  });
+
+  const archRow = document.getElementById('archivedRow');
+  if (archRow) {
+    archRow.innerHTML = (archived.length && filter !== 'archived')
+      ? `<button type="button" class="archived-toggle" id="archToggle">
+           ${STATE.showArchived ? 'Hide' : 'Show'} ${archived.length} archived project${archived.length === 1 ? '' : 's'}
+         </button>`
+      : '';
+    const t = document.getElementById('archToggle');
+    if (t) t.onclick = () => { STATE.showArchived = !STATE.showArchived; renderProjects(); };
+  }
+
   if (!list.length) {
-    grid.innerHTML = `<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">No projects</div><div class="empty-sub">Add a new project to get started.</div></div>`;
+    /* An empty grid has three quite different causes and the fix differs for
+       each. Saying "No projects" for all three sends people to the wrong place. */
+    const why = STATE.attnFilter
+      ? `Nothing outstanding in ${escapeHtml((ATTN_DEFS.find(d => d.key === STATE.attnFilter) || {}).label || 'that')}.`
+      : (base.length ? `No ${escapeHtml(filter)} projects right now.` : 'Add a new project to get started.');
+    const clear = (STATE.attnFilter || filter !== 'all')
+      ? `<button class="btn btn-ghost btn-sm" onclick="clearProjectFilters()">Show all projects</button>` : '';
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1;"><div class="empty-icon">📋</div>
+      <div class="empty-title">${base.length ? 'Nothing here' : 'No projects'}</div>
+      <div class="empty-sub">${why}</div><div style="margin-top:10px;">${clear}</div></div>`;
     return;
   }
   grid.innerHTML = list.map(p => {
     const isActive = p.id === STATE.activeProjectId;
-    // Phase 4: prefer authoritative rollup from plz_dashboard(); fall back to local counts.
-    const d = (DATA.dashboard || []).find(x => x.project_id === p.id) || null;
-    const rfiCount = d ? (d.open_rfis || 0) : DATA.rfis.filter(r => r.project_id === p.id && r.status === 'open').length;
-    const subCount = d ? (d.pending_submittals || 0) : DATA.submittals.filter(s => s.project_id === p.id && s.status === 'pending').length;
-    const openItems = d ? ((d.open_rfis||0) + (d.pending_submittals||0) + (d.open_deficiencies||0)) : (rfiCount + subCount);
-    const overdue = d ? (d.overdue_rfis || 0) : 0;
-    const crit    = d ? (d.critical_defs || 0) : 0;
-    const reportsMtd = d ? (d.reports_this_month || 0) : 0;
-    const rollupBadges = d ? `<div class="project-rollup">` +
-        (overdue > 0 ? `<span class="badge-overdue">Overdue ${overdue}</span> ` : '') +
-        (crit > 0 ? `<span class="badge-crit">Critical ${crit}</span> ` : '') +
-        `<span class="text-sm text-muted">Reports MTD ${reportsMtd}</span></div>` : '';
+    const r = projectRollup(p);
+    const openItems = r.rfis + r.subs + r.defs;
+    const needs = r.overdue > 0 || r.critical > 0;
+    const quiet = p.status === 'active' && r.live && r.reports === 0;
+    const rollupBadges = r.live ? `<div class="project-rollup">` +
+        (r.overdue > 0 ? `<span class="badge-overdue">Overdue ${r.overdue}</span> ` : '') +
+        (r.critical > 0 ? `<span class="badge-crit">Critical ${r.critical}</span> ` : '') +
+        `<span class="text-sm text-muted">${quiet
+           ? 'No report this month'
+           : `Reports MTD ${r.reports}`}</span></div>` : '';
     const pct = projectProgress(p);
     return `
-      <div class="project-card ${isActive ? 'active' : ''}" onclick="selectProject('${p.id}')">
+      <div class="project-card ${isActive ? 'active' : ''}${needs ? ' needs' : ''}"
+           onclick="selectProject('${p.id}')" tabindex="0" role="button"
+           aria-pressed="${isActive}"
+           onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectProject('${p.id}');}">
         <div class="project-card-head">
           <div>
             <div class="project-number">#${escapeHtml(p.code)}</div>
@@ -2799,15 +3206,52 @@ function renderProjects() {
 function selectProject(id) {
   if (isContractor() && id !== AUTH.projectId) return;
   STATE.activeProjectId = id;
+  pswPushRecent(id);   // picking from the grid counts as opening it
   render();
 }
 window.selectProject = selectProject;
+
+function setProjectChip(filter) {
+  STATE.projectFilter = filter;
+  document.querySelectorAll('#projectFilters .chip')
+    .forEach(c => c.classList.toggle('active', c.dataset.filter === filter));
+}
+function clearProjectFilters() {
+  STATE.attnFilter = null;
+  STATE.attnPrevFilter = null;
+  setProjectChip('all');
+  renderProjects();
+}
+window.clearProjectFilters = clearProjectFilters;
 
 document.getElementById('projectFilters').addEventListener('click', e => {
   const chip = e.target.closest('.chip');
   if (!chip) return;
   STATE.projectFilter = chip.dataset.filter;
   document.querySelectorAll('#projectFilters .chip').forEach(c => c.classList.toggle('active', c === chip));
+  renderProjects();
+});
+
+/* The attention tiles are filters. Clicking the active one clears it, so the
+   strip cannot trap you in a narrowed grid with no visible way back. */
+document.getElementById('attnStrip').addEventListener('click', e => {
+  const tile = e.target.closest('.attn-tile');
+  if (!tile || tile.dataset.empty === '1') return;
+  const engaging = STATE.attnFilter !== tile.dataset.attn;
+  STATE.attnFilter = engaging ? tile.dataset.attn : null;
+  /* A tile counts across the portfolio, so honouring a status chip at the same
+     time would show fewer projects than the number promises. The tile wins —
+     and puts the chip back when it is switched off, so a tile pressed twice
+     returns you to the view you started from rather than a third one. */
+  if (engaging) {
+    if (STATE.projectFilter !== 'all') {
+      STATE.attnPrevFilter = STATE.projectFilter;
+      setProjectChip('all');
+    }
+  } else if (STATE.attnPrevFilter) {
+    setProjectChip(STATE.attnPrevFilter);
+    STATE.attnPrevFilter = null;
+  }
   renderProjects();
 });
 
@@ -3408,15 +3852,19 @@ function previousCompletedBySov(projectId, excludePayAppId = null) {
     .forEach(i => { itemNoById[i.id] = i.item_no; });
 
   const byItemNo = {};
-  approvedPayApps.forEach(pa => {
-    const lines = DATA.payAppLines.filter(l => l.pay_app_id === pa.id);
-    lines.forEach(l => {
-      const itemNo = itemNoById[l.sov_item_id];
-      if (itemNo == null) return;
-      // Use total_completed_stored cumulative (max across approved)
-      byItemNo[itemNo] = Math.max(byItemNo[itemNo] || 0, Number(l.total_completed_stored || 0));
+  // Carry forward the LATEST certified pay app's completed-to-date per line —
+  // not Math.max(): a credit CO line is negative and max() clamped it to $0,
+  // dropping CO-008's -$113,337.44 from PA#4's "previous" (TRPV, 2026-09-11).
+  [...approvedPayApps]
+    .sort((a, b) => (Number(a.pay_app_number) || 0) - (Number(b.pay_app_number) || 0))
+    .forEach(pa => {
+      const lines = DATA.payAppLines.filter(l => l.pay_app_id === pa.id);
+      lines.forEach(l => {
+        const itemNo = itemNoById[l.sov_item_id];
+        if (itemNo == null) return;
+        byItemNo[itemNo] = Number(l.total_completed_stored || 0);
+      });
     });
-  });
 
   const map = {};
   currentSovItems(projectId).forEach(i => {
@@ -3474,8 +3922,19 @@ function depositExemptBySov(projectId, excludePayAppId = null) {
 // deposit-exempt base. exempt defaults to 0 (no deposit) so ordinary projects
 // still get a straight 15% × cumulative.
 function lineRetainage(G, exempt, pct) {
+  // Credit lines (negative CO) hold $0 retainage — PA#3 basis, William
+  // 2026-09-11: retainage is never negative; the credit reduces total completed
+  // but does not release retainage held on other lines.
   const base = Math.max(0, (Number(G) || 0) - (Number(exempt) || 0));
   return base * ((Number(pct) || 0) / 100);
+}
+
+// Over-billed = billed beyond the scheduled value IN THE LINE'S DIRECTION.
+// Positive line: G > C. Credit line (C < 0): G more negative than C. A $0 bill
+// against a credit was wrongly flagged (G > C) and blocked submit.
+function isOverBilled(G, C) {
+  const g = Number(G) || 0, c = Number(C) || 0;
+  return c < 0 ? g < c - 0.01 : g > c + 0.01;
 }
 
 // -----------------------------------------------------------------------------
@@ -3494,46 +3953,205 @@ function isCoToken(itemNo) {
   const s = String(itemNo || '').trim().toUpperCase();
   return /^(C\.?O\.?|CHANGE\s*ORDER)\b|^CO[\s\-_.]*\d/.test(s);
 }
+// CO number out of ANY numbering style in play:
+//   contractor continuation sheets → "CO-1", "C.O. 2", "CHANGE ORDER 3"
+//   Plazacore's CO→SOV rollup      → "CO-001", plus "CO-002.1" / "CO-002.2" when the
+//                                    signed CO broke the scope into material + labor
+// A ".N" suffix is a BREAKDOWN of one change order, not a separate CO. The CO's
+// TOTAL governs — never an individual sub-line (William, 2026-08-10).
 function coNumberFromItem(itemNo) {
   const m = String(itemNo || '').toUpperCase().match(/(\d+)/);
   return m ? parseInt(m[1], 10) : null;
 }
+// Group the billed SOV version's change-order lines by CO number, summing the
+// labor/material sub-lines back into the single governing CO amount.
+function sovCoGroups(projectId, sovVersion) {
+  const groups = {};
+  DATA.sovItems
+    .filter(i => i.project_id === projectId
+              && (i.version || 1) === (sovVersion || 1)
+              && !i.is_alternate
+              && (i.source === 'change_order' || i.co_id))
+    .forEach(i => {
+      const n = coNumberFromItem(i.item_no);
+      if (n == null) return;
+      const g = (groups[n] = groups[n] || { coNum: n, items: [], scheduled: 0 });
+      g.items.push(i);
+      g.scheduled += Number(i.scheduled_value) || 0;
+    });
+  Object.values(groups).forEach(g =>
+    g.items.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)));
+  return groups;
+}
+// Split one doc CO line's E/F across that CO's SOV sub-lines pro-rata by
+// scheduled value. Single sub-line = straight pass-through. Pro-rata can never
+// push a sub-line past its own scheduled value so long as the CO total is
+// respected, which validateCoBilling enforces before anything is applied.
+// Pennies from rounding land on the last sub-line so the split sums exactly.
+function allocateCoBilling(group, thisPeriod, stored) {
+  const items = group.items;
+  const total = group.scheduled;
+  const E = Number(thisPeriod) || 0;
+  const F = Number(stored) || 0;
+  if (items.length === 1 || !(Math.abs(total) > 0)) {
+    return items.map((item, k) => ({ item, this_period: k === 0 ? E : 0, stored: k === 0 ? F : 0 }));
+  }
+  const out = [];
+  let eLeft = E, fLeft = F;
+  items.forEach((item, k) => {
+    const last = k === items.length - 1;
+    const share = (Number(item.scheduled_value) || 0) / total;
+    const e = last ? eLeft : Math.round(E * share * 100) / 100;
+    const f = last ? fLeft : Math.round(F * share * 100) / 100;
+    eLeft = Math.round((eLeft - e) * 100) / 100;
+    fLeft = Math.round((fLeft - f) * 100) / 100;
+    out.push({ item, this_period: e, stored: f });
+  });
+  return out;
+}
+// Shared doc-line → SOV matcher used by BOTH review and apply so the two screens
+// can never disagree. CO lines resolve through the CO NUMBER (CO-2 ≡ CO-002 ≡
+// CO-002.1 + CO-002.2) and are never allowed to fuzzy-match a base-bid line —
+// that mismatch previously aimed CO-4's $37,000 at base-bid line GC-1e.
+// Continuation sheets carry SECTION TITLE rows ("B-1 Balcony Slab Edge Repair",
+// "GR-1 Garage Concrete Repairs") that group the sub-items billed beneath them.
+// They are captions, not billable scope: no quantity, no scheduled value, no dollars.
+// The SOV only stores the billable children (B-1a, B-1b, ...), so a header will never
+// match and used to be reported as "unmatched" — noise that buried real problems
+// (William, 2026-08-10). Treat a line as a header only when it carries NO money at
+// all AND the SOV has billable children under its number; anything with dollars stays
+// unmatched so it can never be silently dropped.
+function isSectionHeaderLine(ln, sovItems) {
+  const money = (Number(ln.this_period) || 0) + (Number(ln.stored) || 0) +
+                (Number(ln.previous) || 0) + (Number(ln.total_completed) || 0) +
+                (Number(ln.scheduled_value) || 0);
+  if (Math.abs(money) > 0.005) return false;
+  if (Number(ln.quantity) > 0) return false;
+  const key = String(ln.item_no || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  if (!key) return false;
+  // Children share the header's number and add a letter suffix: B1 -> B1a, GR2 -> GR2c.
+  return sovItems.some(i => {
+    const k = String(i.item_no || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    return k.length > key.length && k.startsWith(key) && /[a-z]/.test(k.slice(key.length));
+  });
+}
+
+function matchDocLines(proj, pa, lines) {
+  const sovItems = DATA.sovItems
+    .filter(i => i.project_id === proj.id && (i.version || 1) === (pa.sov_version || 1) && !i.is_alternate)
+    .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+  const norm = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const byItemNo = {}; sovItems.forEach(i => { byItemNo[norm(i.item_no)] = i; });
+  const groups = sovCoGroups(proj.id, pa.sov_version);
+  return (lines || []).map((ln, idx) => {
+    if (isCoToken(ln.item_no)) {
+      const num = coNumberFromItem(ln.item_no);
+      const g = num != null ? groups[num] : null;
+      if (!g) return { idx, ln, kind: 'co-missing', coNum: num, allocations: [] };
+      return { idx, ln, kind: 'co', coNum: num, group: g,
+               allocations: allocateCoBilling(g, ln.this_period, ln.stored) };
+    }
+    let match = byItemNo[norm(ln.item_no)];
+    if (!match) {
+      const nd = norm(ln.description);
+      match = sovItems.find(i => nd && norm(i.description) === nd)
+           || sovItems.find(i => nd && (norm(i.description).includes(nd) || nd.includes(norm(i.description))));
+    }
+    // And the reverse guard: a base-bid doc line must not land on a CO rollup line.
+    if (match && (match.source === 'change_order' || match.co_id)) match = null;
+    if (!match && isSectionHeaderLine(ln, sovItems)) {
+      return { idx, ln, kind: 'header', allocations: [] };
+    }
+    return { idx, ln, kind: match ? 'sov' : 'unmatched', match,
+             allocations: match ? [{ item: match, this_period: Number(ln.this_period) || 0, stored: Number(ln.stored) || 0 }] : [] };
+  });
+}
 function validateCoBilling(projectId, sovVersion, lines) {
   const blocked = [];
-  // Approved COs for this project, rolled into the billed SOV version.
-  const approvedCos = (DATA.changeOrders || DATA.change_orders || [])
-    .filter(co => co.project_id === projectId
-               && String(co.status).toLowerCase() === 'approved'
-               && co.applied_to_sov === true);
+  const warnings = [];
+  const sgn = v => (v < 0 ? '-' : '') + '$' + Math.abs(v).toLocaleString();
+  const allCos = (DATA.changeOrders || DATA.change_orders || [])
+    .filter(co => co.project_id === projectId);
+  // An owner-overridden CO is still an APPROVED CO and is billable — the override is a
+  // documented decision, not a defect. It is surfaced as a visible warning downstream
+  // (see `overridden` below) so an unsigned CO can never be billed invisibly.
+  const approvedCos = allCos.filter(co => String(co.status).toLowerCase() === 'approved'
+                                       && co.applied_to_sov === true);
+  const groups = sovCoGroups(projectId, sovVersion);
+
+  // Roll the doc's CO lines up BY CO NUMBER before comparing anything: a signed CO
+  // split into material + labor may arrive as one sheet line or several.
+  const billedByCo = {};
   for (const ln of (lines || [])) {
-    const billed = Number(ln.this_period || 0) + Number(ln.stored || 0);
-    if (billed <= 0) continue;                 // only guard lines that actually bill
-    if (!isCoToken(ln.item_no)) continue;      // only guard CO-looking lines
+    if (!isCoToken(ln.item_no)) continue;
     const num = coNumberFromItem(ln.item_no);
-    // Match an approved CO by number first, else by amount within $1.
-    let co = approvedCos.find(c => num != null && Number(c.co_number) === num);
+    const key = num == null ? `?${ln.item_no}` : num;
+    const b = (billedByCo[key] = billedByCo[key] || { num, lines: [], period: 0, prior: 0 });
+    b.lines.push(ln);
+    b.period += (Number(ln.this_period) || 0) + (Number(ln.stored) || 0);
+    b.prior  += Number(ln.previous) || 0;
+  }
+
+  for (const key of Object.keys(billedByCo)) {
+    const b = billedByCo[key];
+    const cumulative = b.prior + b.period;
+    // Credits count too — an unapproved credit CO still restates contract sum to date.
+    if (Math.abs(cumulative) < 0.01) continue;
+    const label = b.lines.map(l => l.item_no).join(', ');
+    const desc = b.lines[0]?.description || '';
+    const co = b.num != null ? approvedCos.find(c => Number(c.co_number) === b.num) : null;
     if (!co) {
-      co = approvedCos.find(c => Math.abs(Number(c.amount || 0) - billed) < 1.0)
-        || approvedCos.find(c => Math.abs(Number(c.amount || 0) - (Number(ln.scheduled_value)||0)) < 1.0);
-    }
-    if (!co) {
-      blocked.push({ item_no: ln.item_no, description: ln.description, this_period: billed,
-        reason: `no APPROVED change order #${num ?? '?'} found in Plazacore (upload & approve the signed CO first)` });
+      const pending = b.num != null ? allCos.find(c => Number(c.co_number) === b.num) : null;
+      const why = !pending
+        ? `no change order #${b.num ?? '?'} exists in Plazacore — upload & approve the signed CO first`
+        : String(pending.status).toLowerCase() !== 'approved'
+          ? `change order #${b.num} is ${String(pending.status).toUpperCase()} in Plazacore${pending.signed ? '' : ' with no signed copy on file'} — approve the signed CO before it can be billed`
+          : `change order #${b.num} is approved but has not been rolled into the SOV — apply it to the SOV, then regenerate this pay app`;
+      blocked.push({ item_no: label, description: desc, this_period: b.period, reason: why });
       continue;
     }
     if (Number(co.sov_version_applied || 0) > Number(sovVersion || 0)) {
-      blocked.push({ item_no: ln.item_no, description: ln.description, this_period: billed,
+      blocked.push({ item_no: label, description: desc, this_period: b.period,
         reason: `CO #${co.co_number} was applied to SOV v${co.sov_version_applied}, but this pay app bills SOV v${sovVersion} — regenerate the pay app on the current SOV` });
       continue;
     }
-    // Guard over-billing beyond the approved CO amount (cumulative would need the
-    // line's prior completed; here we at least flag a single-period overrun).
-    if (billed - Number(co.amount || 0) > 1.0) {
-      blocked.push({ item_no: ln.item_no, description: ln.description, this_period: billed,
-        reason: `billed $${billed.toLocaleString()} exceeds approved CO #${co.co_number} amount $${Number(co.amount||0).toLocaleString()}` });
+    const g = groups[b.num];
+    if (!g) {
+      blocked.push({ item_no: label, description: desc, this_period: b.period,
+        reason: `CO #${co.co_number} is approved but no matching CO line exists in SOV v${sovVersion} — regenerate the pay app on the current SOV` });
+      continue;
+    }
+    // ---- The CO TOTAL governs -------------------------------------------------
+    // Compare CUMULATIVE billing (previous + this period + stored, summed across
+    // every labor/material sub-line) to the approved CO amount. Never compare a
+    // single sub-line to the CO total, and never the CO total to a sub-line.
+    const approved = Number(co.amount || 0);
+    if (approved !== 0 && Math.sign(cumulative) !== Math.sign(approved)) {
+      blocked.push({ item_no: label, description: desc, this_period: b.period,
+        reason: `billed ${sgn(cumulative)} is the opposite sign of approved CO #${co.co_number} (${sgn(approved)}) — confirm whether this is a credit` });
+      continue;
+    }
+    if (Math.abs(cumulative) - Math.abs(approved) > 1.0) {
+      const sub = g.items.length > 1
+        ? ` — the SOV splits this CO into ${g.items.length} lines (${g.items.map(i => `${i.item_no} ${sgn(Number(i.scheduled_value) || 0)}`).join(' + ')} = ${sgn(g.scheduled)}), and the CO total governs`
+        : '';
+      blocked.push({ item_no: label, description: desc, this_period: b.period,
+        reason: `cumulative billed ${sgn(cumulative)} exceeds approved CO #${co.co_number} total ${sgn(approved)}${sub}` });
+      continue;
+    }
+
+    // Non-blocking notice: this CO was approved by owner override, not by signatures.
+    // Billing it is allowed (the override is a documented decision) but it must never
+    // be invisible on a certified pay application.
+    if (co.signature_override) {
+      warnings.push({ item_no: label, description: desc,
+        reason: `CO #${co.co_number} was approved by OWNER OVERRIDE without all signatures`
+          + (co.signature_override_by ? ` (${co.signature_override_by})` : '')
+          + (co.signature_override_reason ? ` — “${co.signature_override_reason}”` : '')
+          + '. Billing is permitted; the pay application should note it.' });
     }
   }
-  return { blocked, ok: blocked.length === 0 };
+  return { blocked, warnings, ok: blocked.length === 0 };
 }
 
 async function newPayAppFlow() {
@@ -3546,9 +4164,33 @@ async function newPayAppFlow() {
     return;
   }
 
-  // Determine contractor (if contractor mode, auto; if owner, pick)
+  // Determine contractor. A draft with contractor_id NULL is an orphan: the
+  // contractor can't Analyze/submit it (analyze-payapp 403s "belongs to another
+  // contractor" — Tareec/TRPV PA#4, 2026-09-11). Never create one.
   let contractorId = null;
-  if (isContractor()) contractorId = AUTH.contractorId;
+  if (isContractor()) {
+    contractorId = AUTH.contractorId || (decodeJwt(AUTH.jwt || '').contractor_id) || null;
+    if (!contractorId && AUTH.native) {
+      contractorId = await resolveNativeContractorId(AUTH);
+      if (contractorId) AUTH.contractorId = contractorId;
+    }
+    if (!contractorId) {
+      toast('Your session is missing its contractor identity — please sign out and open your access link again.', 'error');
+      return;
+    }
+  } else {
+    // Owner/staff: assign the project's active contractor so they can pick it up.
+    const projContractors = (DATA.contractors || []).filter(c => c.project_id === proj.id && c.active !== false);
+    if (projContractors.length === 1) {
+      contractorId = projContractors[0].id;
+    } else if (projContractors.length > 1) {
+      const pick = prompt('Which contractor is this pay app for?\n' +
+        projContractors.map((c, i) => `${i + 1}. ${c.name}`).join('\n'), '1');
+      const idx = parseInt(pick, 10) - 1;
+      if (!(idx >= 0 && idx < projContractors.length)) { toast('Pay app not created — no contractor selected'); return; }
+      contractorId = projContractors[idx].id;
+    }
+  }
 
   // Compute next pay app number
   const existing = projectPayApps(proj.id);
@@ -3636,7 +4278,14 @@ async function openPayAppModal(payAppId, forceEdit = false) {
   const exemptBySov = depositExemptBySov(proj.id, pa.id);
 
   const waiver = DATA.lienWaivers.find(w => w.pay_app_id === pa.id);
-  const payAppDocs = (DATA.payAppDocs || []).filter(d => d.pay_app_id === pa.id);
+  const allPayAppDocs = (DATA.payAppDocs || []).filter(d => d.pay_app_id === pa.id);
+  // The executed (signed + notarized) copy gets its own section after approval,
+  // so keep it out of the generic Supporting Documents list.
+  const executedDocs = allPayAppDocs.filter(d => d.doc_type === 'executed_payapp');
+  const payAppDocs   = allPayAppDocs.filter(d => d.doc_type !== 'executed_payapp');
+  // Certification review state: both confirmations are required before approval.
+  const paUnderReview  = ['submitted','under_review'].includes(pa.status);
+  const signoffComplete = !!pa.signature_verified_at && !!pa.notary_verified_at;
 
   // Calc totals
   function calcTotals() {
@@ -3676,7 +4325,7 @@ async function openPayAppModal(payAppId, forceEdit = false) {
     const I = C - G;
     const J = financeLocked ? (Number(l.retainage) || 0)
                             : lineRetainage(G, exemptBySov[si.id] || 0, Number(proj.retainage_pct) || 0);
-    const over = G > C + 0.01;
+    const over = isOverBilled(G, C);
     return `
       <tr data-sov="${si.id}" class="${over ? 'overbilled' : ''}">
         <td style="font-weight:600;">${escapeHtml(si.item_no)}</td>
@@ -3710,7 +4359,7 @@ async function openPayAppModal(payAppId, forceEdit = false) {
         </div>
         <div>
           <label class="form-label">Contractor</label>
-          <div>${contractor ? escapeHtml(contractor.name) : '<span class="text-muted">Owner-initiated</span>'}</div>
+          <div>${contractor ? escapeHtml(contractor.name) : (isContractor() && pa.contractor_id && pa.contractor_id === AUTH.contractorId ? escapeHtml(AUTH.name || 'You') : '<span class="text-muted">Owner-initiated</span>')}</div>
         </div>
       </div>
       <div class="form-row two-col">
@@ -3818,6 +4467,68 @@ async function openPayAppModal(payAppId, forceEdit = false) {
         ` : '<span class="text-muted">No waiver attached.</span>')}
       </div>
 
+      <!-- Certification review: engineer/architect signature + notary seal.
+           Both must be confirmed before Approve unlocks (also enforced by the
+           trg_enforce_signoff_before_approve DB trigger). -->
+      ${pa.status !== 'draft' ? `
+      <div class="sov-section-head" style="margin-top:22px;">
+        <div class="sov-section-title">Required: Certification Review</div>
+        <div class="sov-meta">Confirm the submitted G702 before approving</div>
+      </div>
+      <div id="paSignoffZone" class="waiver-zone ${signoffComplete ? 'uploaded' : (isOwner() && paUnderReview ? 'missing' : '')}">
+        ${!signoffComplete && isOwner() && paUnderReview ? `
+          <div style="margin-bottom:10px; color:var(--red); font-weight:600;">⚠️ Both items must be verified before this pay application can be approved.</div>
+        ` : ''}
+        <div style="text-align:left;">
+          <label style="display:flex; align-items:flex-start; gap:8px; margin-bottom:10px; ${isOwner() && paUnderReview ? 'cursor:pointer;' : ''}">
+            <input type="checkbox" id="pa-sig-verified" style="margin-top:3px;"
+                   ${pa.signature_verified_at ? 'checked' : ''}
+                   ${isOwner() && paUnderReview ? '' : 'disabled'} />
+            <span>
+              <strong>Engineer / Architect signature verified</strong>
+              <div class="text-sm text-muted">The certification block on the submitted G702 is signed.</div>
+              ${pa.signature_verified_at ? `<div class="text-sm text-muted">✅ ${escapeHtml(pa.signature_verified_by || 'Verified')} · ${new Date(pa.signature_verified_at).toLocaleString()}</div>` : ''}
+            </span>
+          </label>
+          <label style="display:flex; align-items:flex-start; gap:8px; ${isOwner() && paUnderReview ? 'cursor:pointer;' : ''}">
+            <input type="checkbox" id="pa-notary-verified" style="margin-top:3px;"
+                   ${pa.notary_verified_at ? 'checked' : ''}
+                   ${isOwner() && paUnderReview ? '' : 'disabled'} />
+            <span>
+              <strong>Notary seal verified</strong>
+              <div class="text-sm text-muted">A notary seal is present on the submitted G702.</div>
+              ${pa.notary_verified_at ? `<div class="text-sm text-muted">✅ ${escapeHtml(pa.notary_verified_by || 'Verified')} · ${new Date(pa.notary_verified_at).toLocaleString()}</div>` : ''}
+            </span>
+          </label>
+        </div>
+      </div>
+      ` : ''}
+
+      <!-- Executed (signed + notarized) pay application, uploaded after approval -->
+      ${['approved','approved_as_noted','paid'].includes(pa.status) ? `
+      <div class="sov-section-head" style="margin-top:22px;">
+        <div class="sov-section-title">Executed Pay Application</div>
+        <div class="sov-meta">The fully signed &amp; notarized copy</div>
+      </div>
+      <div id="paExecutedZone" class="waiver-zone ${executedDocs.length ? 'uploaded' : ''}">
+        ${executedDocs.length ? executedDocs.map(d => `
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;text-align:left;">
+            <span>✅ <strong>${escapeHtml(d.file_name || 'Executed pay application')}</strong>
+              <span class="text-muted text-sm">(uploaded ${d.uploaded_at ? new Date(d.uploaded_at).toLocaleDateString() : ''}${d.uploaded_by ? ' by ' + escapeHtml(d.uploaded_by) : ''})</span>
+            </span>
+            <button class="btn btn-secondary btn-sm" onclick="viewPayAppDoc('${d.id}')">View</button>
+            ${isOwner() ? `<button class="btn btn-danger btn-sm" onclick="removePayAppDoc('${d.id}','${pa.id}')">Remove</button>` : ''}
+          </div>
+        `).join('') : '<div class="text-muted" style="margin-bottom:10px;">No executed copy on file yet.</div>'}
+        ${isOwner() ? `
+          <div style="text-align:left;margin-top:8px;">
+            <input type="file" id="paExecFile" accept=".pdf,image/jpeg,image/png" />
+            <button class="btn btn-primary btn-sm" id="uploadExecBtn" style="margin-top:10px;">📎 Upload Signed &amp; Notarized Pay App</button>
+          </div>
+        ` : ''}
+      </div>
+      ` : ''}
+
       <!-- Supporting documents: formal Change Order PDF + other backup -->
       <div class="sov-section-head" style="margin-top:22px;">
         <div class="sov-section-title">Supporting Documents</div>
@@ -3900,6 +4611,22 @@ async function openPayAppModal(payAppId, forceEdit = false) {
     uploadPadBtn.addEventListener('click', () => uploadPayAppDoc(pa));
   }
 
+  // Wire certification-review checkboxes (engineer/architect signature, notary)
+  const sigBox = document.getElementById('pa-sig-verified');
+  if (sigBox && !sigBox.disabled) {
+    sigBox.addEventListener('change', () => setPayAppSignoff(pa.id, 'signature', sigBox.checked));
+  }
+  const notBox = document.getElementById('pa-notary-verified');
+  if (notBox && !notBox.disabled) {
+    notBox.addEventListener('change', () => setPayAppSignoff(pa.id, 'notary', notBox.checked));
+  }
+
+  // Wire executed (signed + notarized) pay app upload
+  const uploadExecBtn = document.getElementById('uploadExecBtn');
+  if (uploadExecBtn) {
+    uploadExecBtn.addEventListener('click', () => uploadExecutedPayApp(pa));
+  }
+
   // Wire pay-application PDF import upload
   const paImportUploadBtn = document.getElementById('paImportUploadBtn');
   if (paImportUploadBtn) {
@@ -3928,7 +4655,7 @@ async function openPayAppModal(payAppId, forceEdit = false) {
     tr.querySelector('[data-pct]').textContent = H.toFixed(1) + '%';
     tr.querySelector('[data-bal]').textContent = fmt$2(I);
     tr.querySelector('[data-ret]').textContent = fmt$2(J);
-    tr.classList.toggle('overbilled', G > C + 0.01);
+    tr.classList.toggle('overbilled', isOverBilled(G, C));
 
     // Update footer totals
     const t = calcTotals();
@@ -4002,13 +4729,25 @@ function payAppFooter(pa, editable, hasWaiver) {
     buttons.push(`<button class="btn btn-secondary" onclick="closeModal()">Save &amp; Close</button>`);
     buttons.push(`<button class="btn btn-primary" id="submitPaBtn" ${hasWaiver ? '' : 'disabled'} onclick="submitPayApp('${pa.id}')">${hasWaiver ? 'Submit for Review' : 'Upload Waiver to Submit'}</button>`);
   } else if (isOwner() && ['submitted','under_review'].includes(pa.status)) {
-    const approveGate = hasWaiver ? '' : 'disabled title="Upload the release of lien before approving"';
+    // Approval needs the lien waiver AND both certification confirmations
+    // (engineer/architect signature block + notary seal).
+    const signedOff = !!pa.signature_verified_at && !!pa.notary_verified_at;
+    let blockLabel = '';
+    if (!hasWaiver && !signedOff)      blockLabel = 'Waiver & Certification Required';
+    else if (!hasWaiver)               blockLabel = 'Waiver Required to Approve';
+    else if (!pa.signature_verified_at && !pa.notary_verified_at) blockLabel = 'Verify Signature & Notary';
+    else if (!pa.signature_verified_at) blockLabel = 'Verify Signature Block';
+    else if (!pa.notary_verified_at)    blockLabel = 'Verify Notary Seal';
+    const approveOk  = hasWaiver && signedOff;
+    const approveGate = approveOk ? '' : `disabled title="${escapeHtml(blockLabel)}"`;
     buttons.push(`<button class="btn btn-danger" onclick="rejectPayApp('${pa.id}')">Reject</button>`);
+    buttons.push(`<button class="btn btn-danger" onclick="deletePayApp('${pa.id}')" title="Permanently remove this pay application">Delete</button>`);
     buttons.push(`<div style="flex:1"></div>`);
     buttons.push(`<button class="btn btn-secondary" ${approveGate} onclick="approveAsNoted('${pa.id}')">Approve as Noted</button>`);
     buttons.push(`<button class="btn btn-secondary" onclick="generateG702('${pa.id}')">📄 G702 Print</button>`);
-    buttons.push(`<button class="btn btn-primary" ${approveGate} onclick="approvePayApp('${pa.id}')">${hasWaiver ? 'Approve' : 'Waiver Required to Approve'}</button>`);
+    buttons.push(`<button class="btn btn-primary" ${approveGate} onclick="approvePayApp('${pa.id}')">${approveOk ? 'Approve' : blockLabel}</button>`);
   } else if (isOwner() && pa.status === 'approved') {
+    buttons.push(`<button class="btn btn-danger" onclick="deletePayApp('${pa.id}')" title="Permanently remove this pay application">Delete</button>`);
     buttons.push(`<div style="flex:1"></div>`);
     buttons.push(`<button class="btn btn-secondary" onclick="generateG702('${pa.id}')">📄 G702 Print</button>`);
     buttons.push(`<button class="btn btn-secondary" onclick="closeModal()">Close</button>`);
@@ -4018,6 +4757,8 @@ function payAppFooter(pa, editable, hasWaiver) {
     buttons.push(`<div style="flex:1"></div>`);
     buttons.push(`<button class="btn btn-secondary" onclick="closeModal()">Close</button>`);
   } else {
+    // Owner can remove a pay app in any remaining state (paid, or a draft opened read-only).
+    if (isOwner()) buttons.push(`<button class="btn btn-danger" onclick="deletePayApp('${pa.id}')" title="Permanently remove this pay application">Delete</button>`);
     buttons.push(`<div style="flex:1"></div>`);
     if (['approved','paid'].includes(pa.status)) {
       buttons.push(`<button class="btn btn-secondary" onclick="generateG702('${pa.id}')">📄 G702 Print</button>`);
@@ -4041,8 +4782,14 @@ async function uploadWaiver(pa) {
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span> Uploading…';
 
+  // Storage RLS for contractors requires the first folder to be the project
+  // CODE (plz_project_code()), like every other upload. The old UUID-prefixed
+  // path only worked for owners ("new row violates row-level security policy"
+  // — Tareec/TRPV PA#4 waiver, 2026-09-11). Existing rows keep their file_path.
+  const proj = getProject(pa.project_id);
+  const codePrefix = proj?.code || pa.project_id;
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-  const path = `${pa.project_id}/${pa.id}/${Date.now()}_${safeName}`;
+  const path = `${codePrefix}/payapp/${pa.id}/waiver_${Date.now()}_${safeName}`;
   const { error: upErr } = await sb.storage.from('lien-waivers').upload(path, file, { upsert: false });
   if (upErr) { handleSbError(upErr, 'Upload waiver'); btn.disabled = false; btn.textContent = '📎 Upload Waiver'; return; }
 
@@ -4062,6 +4809,60 @@ async function uploadWaiver(pa) {
   openPayAppModal(pa.id, true);
 }
 window.uploadWaiver = uploadWaiver;
+
+// ---- Certification review (engineer/architect signature + notary seal) ----
+// Owner attestation, stamped with who and when. Both are required before the
+// Approve buttons unlock; the DB trigger trg_enforce_signoff_before_approve
+// enforces the same rule for any non-UI caller.
+async function setPayAppSignoff(payAppId, which, checked) {
+  const now = new Date().toISOString();
+  const patch = which === 'signature'
+    ? { signature_verified_at: checked ? now : null, signature_verified_by: checked ? AUTH.name : null }
+    : { notary_verified_at:    checked ? now : null, notary_verified_by:    checked ? AUTH.name : null };
+  const { error } = await sb.from('pay_apps').update(patch).eq('id', payAppId);
+  if (error) { handleSbError(error, 'Saving certification review'); return; }
+  await reloadData('payApps');
+  toast(checked ? 'Verification recorded' : 'Verification cleared');
+  openPayAppModal(payAppId, false);
+}
+window.setPayAppSignoff = setPayAppSignoff;
+
+// ---- Executed (fully signed + notarized) pay application ----
+// Uploaded after approval as the record copy. Same bucket/path convention as
+// the other pay-app documents so the project-code storage policy applies.
+async function uploadExecutedPayApp(pa) {
+  const file = document.getElementById('paExecFile')?.files?.[0];
+  if (!file) { toast('Choose a file first', 'error'); return; }
+  if (file.size > 25 * 1024 * 1024) { toast('File must be < 25 MB', 'error'); return; }
+  const allowed = ['application/pdf','image/jpeg','image/png'];
+  if (!allowed.includes(file.type)) { toast('Only PDF/JPG/PNG allowed', 'error'); return; }
+
+  const btn = document.getElementById('uploadExecBtn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Uploading…'; }
+  const restore = () => { if (btn) { btn.disabled = false; btn.innerHTML = '📎 Upload Signed &amp; Notarized Pay App'; } };
+
+  const proj = getProject(pa.project_id);
+  const codePrefix = proj?.code || pa.project_id;
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const path = `${codePrefix}/payapp/${pa.id}/executed_${Date.now()}_${safeName}`;
+  const { error: upErr } = await sb.storage.from('change-orders').upload(path, file, { upsert: false });
+  if (upErr) { handleSbError(upErr, 'Upload executed pay application'); restore(); return; }
+
+  const { error: insErr } = await sb.from('pay_app_documents').insert({
+    pay_app_id: pa.id,
+    doc_type: 'executed_payapp',
+    file_path: path,
+    file_name: file.name,
+    file_size: file.size,
+    uploaded_by: AUTH.name,
+  });
+  if (insErr) { handleSbError(insErr, 'Record executed pay application'); restore(); return; }
+
+  await loadAllData();
+  toast('Executed pay application uploaded');
+  openPayAppModal(pa.id, false);
+}
+window.uploadExecutedPayApp = uploadExecutedPayApp;
 
 async function viewWaiver(waiverId) {
   const w = DATA.lienWaivers.find(x => x.id === waiverId);
@@ -4243,38 +5044,64 @@ function paReview(docId, payAppId) {
   if (!doc?.analysis || !Array.isArray(doc.analysis.lines)) { toast('No analysis to review — Analyze first', 'info'); return; }
   if (!pa) return;
   const proj = getProject(pa.project_id);
-  const sovItems = DATA.sovItems
-    .filter(i => i.project_id === proj.id && (i.version || 1) === (pa.sov_version || 1) && !i.is_alternate)
-    .sort((a,b) => (a.sort_order || 0) - (b.sort_order || 0));
 
-  const norm = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-  const byItemNo = {}; sovItems.forEach(i => { byItemNo[norm(i.item_no)] = i; });
-  const rows = doc.analysis.lines.map((ln, idx) => {
-    let match = byItemNo[norm(ln.item_no)];
-    if (!match) {
-      const nd = norm(ln.description);
-      match = sovItems.find(i => nd && norm(i.description) === nd)
-           || sovItems.find(i => nd && (norm(i.description).includes(nd) || nd.includes(norm(i.description))));
-    }
-    return { idx, ln, match };
-  });
-  const matched = rows.filter(r => r.match).length;
-  const unmatched = rows.length - matched;
+  // Shared matcher — CO lines resolve by CO number and fan out across the CO's
+  // labor/material sub-lines. Review and Apply consume the SAME result.
+  const rows = matchDocLines(proj, pa, doc.analysis.lines);
+  const priorOf = sovItemId => Number((DATA.payAppLines.find(l =>
+    l.pay_app_id === pa.id && l.sov_item_id === sovItemId) || {}).work_completed_previous) || 0;
+  const matched = rows.filter(r => r.allocations.length).length;
+  const headers = rows.filter(r => r.kind === 'header').length;
+  const unmatched = rows.length - matched - headers;
 
   const bodyRows = rows.map(r => {
-    const { ln, match } = r;
-    if (!match) {
+    const { ln } = r;
+    if (!r.allocations.length) {
+      // Section captions are expected and carry no money — show them greyed out and
+      // out of the way rather than as warnings competing with real problems.
+      if (r.kind === 'header') {
+        return `<tr style="opacity:.55;">
+          <td class="text-sm"><strong>${escapeHtml(ln.item_no || '—')}</strong><div class="text-muted">${escapeHtml(ln.description || '')}</div></td>
+          <td class="num text-sm">—</td>
+          <td class="num text-sm">—</td>
+          <td class="text-sm" colspan="2"><span class="badge badge-gray">Section header</span> — no billable value, nothing to apply</td>
+        </tr>`;
+      }
+      const why = r.kind === 'co-missing'
+        ? `<span class="badge badge-red">CO #${r.coNum ?? '?'} not in SOV v${pa.sov_version}</span> — skipped`
+        : '<span class="badge badge-yellow">No SOV match</span> — skipped';
       return `<tr style="background:rgba(245,158,11,0.10);">
         <td class="text-sm"><strong>${escapeHtml(ln.item_no || '—')}</strong><div class="text-muted">${escapeHtml(ln.description || '')}</div></td>
         <td class="num text-sm">${fmt$2(ln.this_period)}</td>
         <td class="num text-sm">${fmt$2(ln.stored)}</td>
-        <td class="text-sm" colspan="2"><span class="badge badge-yellow">No SOV match</span> — skipped</td>
+        <td class="text-sm" colspan="2">${why}</td>
       </tr>`;
     }
+    // One CO doc line → N SOV sub-lines. Judge over-billing on the CO TOTAL,
+    // then show the split underneath so the allocation is auditable.
+    if (r.kind === 'co') {
+      const C = r.group.scheduled;
+      const D = r.group.items.reduce((s, i) => s + priorOf(i.id), 0);
+      const G = D + (Number(ln.this_period) || 0) + (Number(ln.stored) || 0);
+      const over = Math.abs(G) > Math.abs(C) + 0.01;
+      const split = r.group.items.length > 1
+        ? `<div class="text-muted" style="margin-top:3px;">${r.allocations.map(a =>
+            `${escapeHtml(a.item.item_no)}: ${fmt$2(a.this_period + a.stored)}`).join(' · ')}</div>`
+        : '';
+      return `<tr${over ? ' style="background:rgba(239,68,68,0.10);"' : ''}>
+        <td class="text-sm"><strong>${escapeHtml(ln.item_no)}</strong> <span class="badge badge-blue">CO #${r.coNum}</span>
+          <div class="text-muted">${escapeHtml(ln.description || '')}${r.group.items.length > 1 ? ` — split across ${r.group.items.length} SOV lines (labor/material)` : ''}</div>${split}</td>
+        <td class="num text-sm">${fmt$2(ln.this_period)}</td>
+        <td class="num text-sm">${fmt$2(ln.stored)}</td>
+        <td class="num text-sm">${fmt$2(G)} / ${fmt$2(C)}</td>
+        <td class="text-sm">${over ? '<span class="badge badge-red">Over CO total</span>' : '<span class="badge badge-green">OK</span>'}</td>
+      </tr>`;
+    }
+    const match = r.match;
     const C = Number(match.scheduled_value) || 0;
-    const D = Number((DATA.payAppLines.find(l => l.pay_app_id === pa.id && l.sov_item_id === match.id) || {}).work_completed_previous) || 0;
+    const D = priorOf(match.id);
     const G = D + Number(ln.this_period) + Number(ln.stored);
-    const over = G > C + 0.01;
+    const over = isOverBilled(G, C);
     return `<tr${over ? ' style="background:rgba(239,68,68,0.10);"' : ''}>
       <td class="text-sm"><strong>${escapeHtml(match.item_no)}</strong><div class="text-muted">${escapeHtml(match.description)}</div></td>
       <td class="num text-sm">${fmt$2(ln.this_period)}</td>
@@ -4295,6 +5122,10 @@ function paReview(docId, payAppId) {
   const coBlockedBanner = coCheck.blocked.length
     ? `<div class="warn-banner" style="background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.4);">🛑 <strong>Change-order billing not verified — Apply is blocked:</strong><ul style="margin:6px 0 0 18px;">${coCheck.blocked.map(b => `<li>“${escapeHtml(b.item_no)} ${escapeHtml(b.description||'')}” ($${(b.this_period||0).toLocaleString()}) — ${escapeHtml(b.reason)}</li>`).join('')}</ul><div style="margin-top:6px;">Upload &amp; approve the signed CO in the Change Orders tab (or fix the line mapping), then re-analyze.</div></div>`
     : '';
+  // Owner-override notices: billing is permitted, but never silently.
+  const coWarnBanner = (coCheck.warnings || []).length
+    ? `<div class="warn-banner" style="background:rgba(245,158,11,0.12);border-color:rgba(245,158,11,0.45);">🔓 <strong>Change order(s) approved by owner override — billing allowed, disclose on the application:</strong><ul style="margin:6px 0 0 18px;">${coCheck.warnings.map(w => `<li>“${escapeHtml(w.item_no)} ${escapeHtml(w.description||'')}” — ${escapeHtml(w.reason)}</li>`).join('')}</ul></div>`
+    : '';
 
   showModal({
     title: `Review Extracted Pay Application — #${pa.pay_app_number}`,
@@ -4302,7 +5133,8 @@ function paReview(docId, payAppId) {
     body: `
       ${doc.analysis.warnings && doc.analysis.warnings.length ? `<div class="warn-banner">⚠️ ${doc.analysis.warnings.map(escapeHtml).join(' ')}</div>` : ''}
       ${coBlockedBanner}
-      <div class="hint-banner">Extracted <strong>${rows.length}</strong> line(s): <strong>${matched}</strong> matched to the SOV${unmatched ? `, <strong>${unmatched}</strong> unmatched (will be skipped)` : ''}. ${hdrBits.length ? '<br>' + hdrBits.join(' · ') : ''}<br>Applying will set each matched line's <strong>This Period (E)</strong> and <strong>Stored (F)</strong>; totals recompute automatically. Review against the PDF before applying.</div>
+      ${coWarnBanner}
+      <div class="hint-banner">Extracted <strong>${rows.length}</strong> line(s): <strong>${matched}</strong> matched to the SOV${headers ? `, <strong>${headers}</strong> section header(s) ignored` : ''}${unmatched ? `, <strong>${unmatched}</strong> unmatched (will be skipped)` : ''}. ${hdrBits.length ? '<br>' + hdrBits.join(' · ') : ''}<br>Applying will set each matched line's <strong>This Period (E)</strong> and <strong>Stored (F)</strong>; totals recompute automatically. Review against the PDF before applying.</div>
       <div class="table-wrap" style="max-height:420px;overflow:auto;">
         <table class="data">
           <thead><tr><th>SOV Item</th><th class="num">E: This Period</th><th class="num">F: Stored</th><th class="num">Completed / Sched</th><th>Check</th></tr></thead>
@@ -4323,19 +5155,14 @@ async function paApply(docId, payAppId) {
   if (!doc?.analysis || !pa) { toast('Nothing to apply', 'error'); return; }
   if (pa.status !== 'draft') { toast('Only draft pay apps can be updated', 'error'); return; }
   const proj = getProject(pa.project_id);
-  const sovItems = DATA.sovItems
-    .filter(i => i.project_id === proj.id && (i.version || 1) === (pa.sov_version || 1) && !i.is_alternate);
-  const norm = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-  const byItemNo = {}; sovItems.forEach(i => { byItemNo[norm(i.item_no)] = i; });
   // Deposit-exempt base (PA#1 held 0% retainage; 15% applies cumulatively above it).
   const exemptBySov = depositExemptBySov(proj.id, pa.id);
 
-  // ---- CO CROSS-REFERENCE GUARD (William, 2026-07-09) ----------------------
-  // A pay app may bill change-order work ONLY if the CO actually exists and is
-  // APPROVED in Plazacore. This catches the failure mode where a contractor
-  // bills "CO #N" that was never uploaded/approved, or bills it against the
-  // wrong SOV line (e.g. an unrelated bid alternate). We block the apply and
-  // tell the user exactly which CO is unverified so it can be resolved.
+  // ---- CO CROSS-REFERENCE GUARD (William, 2026-07-09; CO-total rule 2026-08-10) ----
+  // A pay app may bill change-order work ONLY if the CO exists and is APPROVED in
+  // Plazacore. Where a signed CO was broken out into labor + materials, the SOV
+  // carries sub-lines (CO-002.1 / CO-002.2) and the CO's TOTAL governs — billing is
+  // rolled up per CO number before comparison, never judged sub-line by sub-line.
   const coCheck = validateCoBilling(proj.id, pa.sov_version, doc.analysis.lines);
   if (coCheck.blocked.length) {
     const msg = coCheck.blocked.map(b =>
@@ -4345,39 +5172,57 @@ async function paApply(docId, payAppId) {
     toast('Blocked: unverified change-order billing — see details', 'error');
     return;
   }
-
-  let applied = 0;
-  for (const ln of doc.analysis.lines) {
-    let match = byItemNo[norm(ln.item_no)];
-    if (!match) {
-      const nd = norm(ln.description);
-      match = sovItems.find(i => nd && norm(i.description) === nd)
-           || sovItems.find(i => nd && (norm(i.description).includes(nd) || nd.includes(norm(i.description))));
+  // Owner-override notices: allowed, but require an explicit acknowledgement so an
+  // unsigned CO can never reach a certified pay application unnoticed.
+  if ((coCheck.warnings || []).length) {
+    const wmsg = coCheck.warnings.map(w => `• “${w.item_no} ${w.description}” — ${w.reason}`).join('\n');
+    if (!confirm('🔓 This pay application bills change order(s) approved by OWNER OVERRIDE '
+      + 'without all signatures:\n\n' + wmsg
+      + '\n\nThis is permitted, but the pay application should disclose it. Apply anyway?')) {
+      toast('Apply cancelled', 'info');
+      return;
     }
-    if (!match) continue;
-    const line = DATA.payAppLines.find(l => l.pay_app_id === pa.id && l.sov_item_id === match.id);
-    if (!line) continue;
-    const C = Number(match.scheduled_value) || 0;
-    const D = Number(line.work_completed_previous) || 0;
-    const E = Number(ln.this_period) || 0;
-    const F = Number(ln.stored) || 0;
-    const G = D + E + F;
-    const H = C > 0 ? (G / C) * 100 : 0;
-    const I = C - G;
-    const J = lineRetainage(G, exemptBySov[match.id] || 0, Number(proj.retainage_pct) || 0);
-    const { error } = await sb.from('pay_app_lines').update({
-      work_completed_this_period: E,
-      materials_stored: F,
-      total_completed_stored: G,
-      pct_complete: H,
-      balance_to_finish: I,
-      retainage: J,
-    }).eq('id', line.id);
-    if (error) { handleSbError(error, 'Apply pay app line'); return; }
-    applied++;
+  }
+
+  // Same matcher the review screen used, so what was reviewed is what gets applied.
+  const rows = matchDocLines(proj, pa, doc.analysis.lines);
+  const skippedCo = rows.filter(r => r.kind === 'co-missing');
+  if (skippedCo.length) {
+    if (!confirm(`⚠️ ${skippedCo.length} change-order line(s) have no matching CO line in SOV v${pa.sov_version} and will be SKIPPED:\n\n` +
+      skippedCo.map(r => `• ${r.ln.item_no} ${r.ln.description || ''}`).join('\n') +
+      `\n\nApply the remaining lines anyway?`)) { toast('Apply cancelled', 'info'); return; }
+  }
+
+  let applied = 0, coApplied = 0;
+  for (const r of rows) {
+    if (!r.allocations.length) continue;
+    for (const alloc of r.allocations) {
+      const match = alloc.item;
+      const line = DATA.payAppLines.find(l => l.pay_app_id === pa.id && l.sov_item_id === match.id);
+      if (!line) continue;
+      const C = Number(match.scheduled_value) || 0;
+      const D = Number(line.work_completed_previous) || 0;
+      const E = Number(alloc.this_period) || 0;
+      const F = Number(alloc.stored) || 0;
+      const G = D + E + F;
+      const H = C !== 0 ? (G / C) * 100 : 0;
+      const I = C - G;
+      const J = lineRetainage(G, exemptBySov[match.id] || 0, Number(proj.retainage_pct) || 0);
+      const { error } = await sb.from('pay_app_lines').update({
+        work_completed_this_period: E,
+        materials_stored: F,
+        total_completed_stored: G,
+        pct_complete: H,
+        balance_to_finish: I,
+        retainage: J,
+      }).eq('id', line.id);
+      if (error) { handleSbError(error, 'Apply pay app line'); return; }
+      applied++;
+    }
+    if (r.kind === 'co') coApplied++;
   }
   await loadAllData();
-  toast(`Applied ${applied} line item(s) from the pay application PDF`, 'success');
+  toast(`Applied ${applied} SOV line(s)${coApplied ? ` — including ${coApplied} change order(s) split across labor/material sub-lines` : ''}`, 'success');
   openPayAppModal(pa.id, true);
 }
 window.paApply = paApply;
@@ -4413,7 +5258,7 @@ async function submitPayApp(payAppId) {
   for (const l of lines) {
     const si = DATA.sovItems.find(s => s.id === l.sov_item_id);
     if (!si) continue;
-    if (Number(l.total_completed_stored) > Number(si.scheduled_value) + 0.01) {
+    if (isOverBilled(Number(l.total_completed_stored), Number(si.scheduled_value))) {
       toast(`Line ${si.item_no} is over-billed — please correct`, 'error');
       return;
     }
@@ -4456,25 +5301,37 @@ window.submitPayApp = submitPayApp;
 async function deletePayApp(payAppId) {
   const pa = DATA.payApps.find(x => x.id === payAppId);
   if (!pa) return;
-  // Deletable states: own draft (contractor/owner) or a rejected app (owner only).
+  // Deletable states: contractors may delete their own draft; the owner may delete a
+  // pay app in ANY status (DB policy pa_owner_delete; lines/docs/waivers cascade).
   const isDraft = pa.status === 'draft';
-  const isRejected = pa.status === 'rejected';
-  if (!(isDraft || (isRejected && isOwner()))) {
-    toast('Only draft or rejected pay apps can be deleted', 'error');
+  if (!(isDraft || isOwner())) {
+    toast('Only draft pay apps can be deleted', 'error');
     return;
   }
-  if (!confirm(isRejected
-      ? `Permanently delete rejected Pay App #${pa.pay_app_number}? This removes its line items, uploaded documents, and lien waiver.`
-      : 'Delete this draft pay app?')) return;
+  if (isDraft) {
+    if (!confirm('Delete this draft pay app?')) return;
+  } else {
+    // Removing an approved/paid application rewrites billing history: previous-certificates
+    // and completed-to-date on every later application are derived from it.
+    const later = projectPayApps(pa.project_id).filter(x => x.pay_app_number > pa.pay_app_number);
+    const warn = later.length
+      ? `\n\nWARNING: ${later.length} later pay app(s) (#${later.map(x => x.pay_app_number).join(', #')}) will have their previous-certificates and completed-to-date figures recalculated.`
+      : '';
+    const typed = prompt(`Permanently delete Pay App #${pa.pay_app_number} (status: ${pa.status})?\nThis removes its line items, uploaded documents and lien waivers and cannot be undone.${warn}\n\nType the pay app number (${pa.pay_app_number}) to confirm:`);
+    if (typed === null) return;
+    if (String(typed).trim() !== String(pa.pay_app_number)) { toast('Pay app number did not match — nothing deleted', 'error'); return; }
+  }
   // remove lien waiver files
   const ws = DATA.lienWaivers.filter(w => w.pay_app_id === payAppId);
   for (const w of ws) await sb.storage.from('lien-waivers').remove([w.file_path]).catch(()=>{});
   // remove supporting/pay-application document files
   const ds = (DATA.payAppDocs || []).filter(d => d.pay_app_id === payAppId);
   for (const d of ds) { if (d.file_path) await sb.storage.from('change-orders').remove([d.file_path]).catch(()=>{}); }
-  await sb.from('pay_apps').delete().eq('id', payAppId);
+  const { error: delErr } = await sb.from('pay_apps').delete().eq('id', payAppId);
+  if (delErr) { toast('Delete failed: ' + delErr.message, 'error'); return; }
   await loadAllData();
-  toast('Pay app deleted');
+  if (DATA.payApps.find(x => x.id === payAppId)) { toast('Delete was blocked by the database policy', 'error'); return; }
+  toast(`Pay App #${pa.pay_app_number} deleted`);
   closeModal();
   render();
 }
@@ -4486,11 +5343,23 @@ window.deletePayApp = deletePayApp;
 function payAppHasWaiver(payAppId) {
   return DATA.lienWaivers.some(w => w.pay_app_id === payAppId);
 }
+// Both certification confirmations must be on file before approval. Mirrors
+// the trg_enforce_signoff_before_approve DB trigger.
+function payAppSignoffError(payAppId) {
+  const pa = DATA.payApps.find(p => p.id === payAppId);
+  if (!pa) return 'Pay application not found.';
+  if (!pa.signature_verified_at) return 'Verify the engineer/architect signature block before approving.';
+  if (!pa.notary_verified_at)    return 'Verify the notary seal before approving.';
+  return null;
+}
+
 async function approvePayApp(payAppId) {
   if (!payAppHasWaiver(payAppId)) {
     toast('A release of lien must be uploaded before this pay app can be approved.', 'error');
     return;
   }
+  const sErr = payAppSignoffError(payAppId);
+  if (sErr) { toast(sErr, 'error'); return; }
   const { error } = await sb.from('pay_apps').update({
     status: 'approved',
     reviewed_at: new Date().toISOString(),
@@ -4509,6 +5378,8 @@ async function approveAsNoted(payAppId) {
     toast('A release of lien must be uploaded before this pay app can be approved.', 'error');
     return;
   }
+  const sErr2 = payAppSignoffError(payAppId);
+  if (sErr2) { toast(sErr2, 'error'); return; }
   const notes = prompt('Approval notes:');
   if (notes === null) return;
   const { error } = await sb.from('pay_apps').update({
@@ -4819,7 +5690,12 @@ function renderSubmittals() {
       <td class="text-sm">${fmtDate(s.submitted_at)}</td>
       <td class="text-sm">${fmtDate(s.reviewed_at)}</td>
       <td>${statusBadge(s.status)}</td>
-      <td>${(s.status === 'approved' || s.status === 'rejected' || s.status === 'approved_as_noted') ? '<span class="badge badge-green">Completed</span>' : `<span class="badge ${s.ball_in_court === 'engineer' ? 'badge-yellow' : s.ball_in_court === 'owner' ? 'badge-purple' : 'badge-blue'}">${escapeHtml(lbl(s.ball_in_court))}</span>`}</td>
+      <td>${SUB_CLOSED.includes(s.status) ? '<span class="badge badge-green">Completed</span>'
+        : SUB_RETURNED.includes(s.status)
+          ? (DATA.submittals.some(x => x.project_id === s.project_id && x.submittal_number === s.submittal_number && (Number(x.revision) || 0) > (Number(s.revision) || 0))
+              ? '<span class="badge badge-gray">Superseded</span>'
+              : '<span class="badge badge-red">Contractor · Resubmit</span>')
+          : `<span class="badge ${s.ball_in_court === 'engineer' ? 'badge-yellow' : s.ball_in_court === 'owner' ? 'badge-purple' : 'badge-blue'}">${escapeHtml(lbl(s.ball_in_court))}</span>`}${s.due_date && !SUB_CLOSED.includes(s.status) ? `<div class="text-sm ${s.due_date < todayStr() ? '' : 'text-muted'}" style="${s.due_date < todayStr() ? 'color:var(--red);' : ''}">Due ${fmtDate(s.due_date)}</div>` : ''}</td>
       <td><div class="row-actions"><button class="btn btn-ghost btn-sm" onclick="openSubmittalModal('${s.id}')">View</button></div></td>
     </tr>
   `;
@@ -4844,38 +5720,105 @@ function nextSubNumber() {
   return 'SUB-' + String(next).padStart(3, '0');
 }
 
-function openSubmittalModal(id) {
+// Submittal workflow (Procore-style, 2026-10-03): a returned submittal
+// (Rejected / Revise & Resubmit) puts the ball in the contractor's court and is
+// NOT closed — the contractor answers it with a new revision. Only Approved and
+// Approved as Noted close it.
+const SUB_RETURNED = ['rejected', 'revise_resubmit'];
+const SUB_CLOSED = ['approved', 'approved_as_noted'];
+
+// Responsible-contractor choices: contractors on the active project's team.
+// Falls back to the whole team if no contractor is assigned to the project.
+function subContractorChoices(currentId) {
+  const pid = STATE.activeProjectId;
+  const memberIds = new Set((DATA.projectMembers || []).filter(m => m.project_id === pid).map(m => m.user_id));
+  const team = (DATA.profiles || []).filter(p => memberIds.has(p.id) && p.active !== false);
+  let list = team.filter(p => p.app_role === 'contractor');
+  if (!list.length) list = team;
+  if (isContractor() && AUTH.userId && !list.some(p => p.id === AUTH.userId)) {
+    list = [{ id: AUTH.userId, full_name: AUTH.name, company: '' }, ...list];
+  }
+  if (currentId && !list.some(p => p.id === currentId)) {
+    const p = (DATA.profiles || []).find(x => x.id === currentId);
+    list = [p || { id: currentId, full_name: 'Assigned user', company: '' }, ...list];
+  }
+  return list;
+}
+
+// Owner picks a decision → move the ball and stamp the review date, the way
+// Procore does. Both stay editable before saving.
+function onSubmittalStatusChange() {
+  const st = document.getElementById('sb-status').value;
+  const bic = document.getElementById('sb-bic');
+  if (SUB_RETURNED.includes(st) || SUB_CLOSED.includes(st)) bic.value = 'contractor';
+  else if (st === 'pending') bic.value = 'engineer';
+  const drev = document.getElementById('sb-drev');
+  if (st !== 'pending' && drev && !drev.value) drev.value = todayStr();
+}
+window.onSubmittalStatusChange = onSubmittalStatusChange;
+
+function openSubmittalModal(id, opts) {
   if (!STATE.activeProjectId) { toast('Select a project first'); return; }
   const editing = id ? DATA.submittals.find(s => s.id === id) : null;
+  // "Create Revision": a new row with the same number at revision + 1, back in
+  // the engineer's court. Carries description/spec/contractor; clears review.
+  const reviseFrom = (!editing && opts && opts.reviseFrom) ? DATA.submittals.find(s => s.id === opts.reviseFrom) : null;
+  const seed = editing || (reviseFrom ? {
+    submittal_number: reviseFrom.submittal_number, spec_section: reviseFrom.spec_section,
+    description: reviseFrom.description, submitted_by: reviseFrom.submitted_by,
+    reviewer: reviseFrom.reviewer, revision: (Number(reviseFrom.revision) || 0) + 1,
+    ball_in_court: 'engineer', assigned_to: reviseFrom.assigned_to,
+  } : null);
   const canEditFully = isOwner();
+  const defaultAssignee = seed?.assigned_to || (isContractor() ? AUTH.userId : (() => {
+    const c = subContractorChoices(null).filter(p => p.app_role === 'contractor');
+    return c.length === 1 ? c[0].id : '';
+  })());
+  const contractorOpts = subContractorChoices(seed?.assigned_to).map(p =>
+    `<option value="${escapeHtml(p.id)}" ${p.id === defaultAssignee ? 'selected' : ''}>${escapeHtml(p.full_name || p.email || 'User')}${p.company ? ' — ' + escapeHtml(p.company) : ''}</option>`).join('');
+  const returned = editing && SUB_RETURNED.includes(editing.status);
+  const hasNewerRev = editing && DATA.submittals.some(s => s.project_id === editing.project_id
+    && s.submittal_number === editing.submittal_number && (Number(s.revision) || 0) > (Number(editing.revision) || 0));
   showModal({
-    title: editing ? `${editing.submittal_number} — ${editing.description || ''}` : 'New Submittal',
+    title: editing ? `${editing.submittal_number} Rev ${editing.revision || 0} — ${editing.description || ''}`
+      : (reviseFrom ? `Resubmit ${reviseFrom.submittal_number} — Revision ${seed.revision}` : 'New Submittal'),
     body: `
+      ${returned ? `<div class="form-row" style="border-left:4px solid var(--red);padding:8px 12px;background:rgba(239,68,68,.08);border-radius:4px;">
+        <strong>${escapeHtml(lbl(editing.status))}</strong> — ${hasNewerRev ? 'a newer revision has been submitted.' : 'returned to the contractor. Respond with a new revision.'}
+      </div>` : ''}
       <div class="form-row two-col">
-        <div><label class="form-label">Submittal #</label><input id="sb-number" value="${escapeHtml(editing?.submittal_number || nextSubNumber())}" /></div>
-        <div><label class="form-label">Spec Section</label><input id="sb-spec" value="${escapeHtml(editing?.spec_section || '')}" /></div>
+        <div><label class="form-label">Submittal #</label><input id="sb-number" value="${escapeHtml(seed?.submittal_number || nextSubNumber())}" ${reviseFrom ? 'readonly' : ''} /></div>
+        <div><label class="form-label">Spec Section</label><input id="sb-spec" value="${escapeHtml(seed?.spec_section || '')}" /></div>
       </div>
-      <div class="form-row"><label class="form-label">Description</label><input id="sb-desc" value="${escapeHtml(editing?.description || '')}" /></div>
+      <div class="form-row"><label class="form-label">Description</label><input id="sb-desc" value="${escapeHtml(seed?.description || '')}" /></div>
       <div class="form-row two-col">
-        <div><label class="form-label">Submitted By</label><input id="sb-by" value="${escapeHtml(editing?.submitted_by || (isContractor() ? AUTH.name : ''))}" /></div>
-        <div><label class="form-label">Reviewer</label><input id="sb-reviewer" value="${escapeHtml(editing?.reviewer || 'William Plaza')}" /></div>
+        <div><label class="form-label">Submitted By</label><input id="sb-by" value="${escapeHtml(seed?.submitted_by || (isContractor() ? AUTH.name : ''))}" /></div>
+        <div><label class="form-label">Reviewer</label><input id="sb-reviewer" value="${escapeHtml(seed?.reviewer || 'William Plaza')}" /></div>
+      </div>
+      <div class="form-row two-col">
+        <div><label class="form-label">Responsible Contractor</label>
+          <select id="sb-assignee" ${!canEditFully && !isContractor() ? 'disabled' : ''}>
+            <option value="">— None —</option>${contractorOpts}
+          </select>
+        </div>
+        <div><label class="form-label">Response Due</label><input id="sb-due" type="date" value="${escapeHtml(editing?.due_date || '')}" ${!canEditFully?'readonly':''} /></div>
       </div>
       <div class="form-row two-col">
         <div><label class="form-label">Date Submitted</label><input id="sb-dsub" type="date" value="${editing?.submitted_at ? editing.submitted_at.slice(0,10) : todayStr()}" /></div>
         <div><label class="form-label">Date Reviewed</label><input id="sb-drev" type="date" value="${editing?.reviewed_at ? editing.reviewed_at.slice(0,10) : ''}" ${!canEditFully?'readonly':''} /></div>
       </div>
       <div class="form-row two-col">
-        <div><label class="form-label">Revision</label><input id="sb-rev" type="number" min="0" value="${editing?.revision || 0}" /></div>
+        <div><label class="form-label">Revision</label><input id="sb-rev" type="number" min="0" value="${seed?.revision || 0}" ${reviseFrom ? 'readonly' : ''} /></div>
         <div><label class="form-label">Ball-in-Court</label>
           <select id="sb-bic">
-            <option value="contractor" ${editing?.ball_in_court === 'contractor' ? 'selected' : ''}>Contractor</option>
-            <option value="engineer" ${editing?.ball_in_court === 'engineer' ? 'selected' : ''}>Engineer</option>
-            <option value="owner" ${editing?.ball_in_court === 'owner' ? 'selected' : ''}>Owner</option>
+            <option value="contractor" ${seed?.ball_in_court === 'contractor' ? 'selected' : ''}>Contractor</option>
+            <option value="engineer" ${(seed ? seed.ball_in_court === 'engineer' : true) ? 'selected' : ''}>Engineer</option>
+            <option value="owner" ${seed?.ball_in_court === 'owner' ? 'selected' : ''}>Owner</option>
           </select>
         </div>
       </div>
       <div class="form-row"><label class="form-label">Status</label>
-        <select id="sb-status" ${!canEditFully ? 'disabled' : ''}>
+        <select id="sb-status" onchange="onSubmittalStatusChange()" ${!canEditFully || reviseFrom ? 'disabled' : ''}>
           <option value="pending" ${editing?.status === 'pending' ? 'selected' : ''}>Pending</option>
           <option value="approved" ${editing?.status === 'approved' ? 'selected' : ''}>Approved</option>
           <option value="approved_as_noted" ${editing?.status === 'approved_as_noted' ? 'selected' : ''}>Approved as Noted</option>
@@ -4912,7 +5855,7 @@ function openSubmittalModal(id) {
       })() : '<div class="form-row"><div class="text-muted" style="font-size:13px;">&#128221; Save the submittal first, then attach files.</div></div>'}
     `,
     footer: editing
-      ? `${canEditFully ? `<button class="btn btn-danger" onclick="deleteSubmittal('${editing.id}')">Delete</button>` : ''}<div style="flex:1"></div><button class="btn btn-secondary" onclick="closeModal()">Close</button><button class="btn btn-primary" onclick="saveSubmittal('${editing.id}')">Save</button>`
+      ? `${canEditFully ? `<button class="btn btn-danger" onclick="deleteSubmittal('${editing.id}')">Delete</button>` : ''}<div style="flex:1"></div>${returned && !hasNewerRev ? `<button class="btn btn-secondary" onclick="closeModal(); openSubmittalModal(null, { reviseFrom: '${editing.id}' })">↻ Create Revision ${(Number(editing.revision) || 0) + 1}</button>` : ''}<button class="btn btn-secondary" onclick="closeModal()">Close</button><button class="btn btn-primary" onclick="saveSubmittal('${editing.id}')">Save</button>`
       : `<button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveSubmittal()">Create Submittal</button>`
   });
 }
@@ -4933,18 +5876,30 @@ async function saveSubmittal(id) {
     ball_in_court: document.getElementById('sb-bic').value,
     status: statusEl.disabled ? undefined : statusEl.value,
     notes: document.getElementById('sb-notes').value.trim() || null,
+    due_date: document.getElementById('sb-due').value || null,
   };
+  const assigneeEl = document.getElementById('sb-assignee');
+  if (assigneeEl && !assigneeEl.disabled) data.assigned_to = assigneeEl.value || null;
   if (!data.description) { toast('Description required'); return; }
+  // Notifications: the DB trigger (notify-activity) emails the whole project
+  // team on create and on every status change, with the workflow-specific
+  // message. The client only pings the assignee (notify-route) for a
+  // ball-in-court move that happens WITHOUT a status change, so nobody gets
+  // the same event twice.
   let res, newId = id;
   if (id) {
     if (data.status === undefined) delete data.status;
     const prev = DATA.submittals.find(s => s.id === id) || {};
+    const statusChanged = data.status !== undefined && data.status !== prev.status;
     res = await sb.from('submittals').update(data).eq('id', id);
-    if (!res.error && prev.ball_in_court !== data.ball_in_court) notifyRoute('submittals', id, 'ball_in_court_change');
+    if (!res.error && !statusChanged && prev.ball_in_court !== data.ball_in_court) notifyRoute('submittals', id, 'ball_in_court_change');
   } else {
     if (data.status === undefined) data.status = 'pending';
     res = await sb.from('submittals').insert(data).select('id').single();
-    if (!res.error && res.data) { newId = res.data.id; notifyRoute('submittals', newId, 'created'); }
+    if (!res.error && res.data) {
+      newId = res.data.id;
+      logActivity('submittal_created', { ref_table: 'submittals', ref_id: newId, project_id: STATE.activeProjectId || null });
+    }
   }
   if (res.error) { handleSbError(res.error, 'Save submittal'); return; }
   await reloadData('submittals','dashboard');
@@ -5064,7 +6019,7 @@ function renderCos() {
   }
   body.innerHTML = list.map(c => `
     <tr>
-      <td style="font-weight:600;">${c.is_pco ? 'PCO-' : 'CO-'}${String(c.co_number).padStart(3,'0')}${c.file_path ? ' <span title="Document attached">📎</span>' : ''}${c.applied_to_sov ? ` <span class="badge badge-green" title="In SOV v${c.sov_version_applied}">SOV</span>` : ''}</td>
+      <td style="font-weight:600;">${c.is_pco ? 'PCO-' : 'CO-'}${String(c.co_number).padStart(3,'0')}${c.file_path ? ' <span title="Document attached">📎</span>' : ''}${c.applied_to_sov ? ` <span class="badge badge-green" title="In SOV v${c.sov_version_applied}">SOV</span>` : ''}${c.signature_override ? ` <span class="badge badge-red" title="Owner override — approved without all signatures${c.signature_override_by ? ' by ' + escapeHtml(c.signature_override_by) : ''}${c.signature_override_reason ? ': ' + escapeHtml(c.signature_override_reason) : ''}">🔓 OVERRIDE</span>` : ''}</td>
       <td class="text-sm">${fmtDate(c.created_at)}</td>
       <td>${escapeHtml(c.description || '')}</td>
       <td><span class="badge ${c.is_pco ? 'badge-yellow' : 'badge-green'}">${c.is_pco ? 'PCO' : 'Executed CO'}</span></td>
@@ -5126,6 +6081,17 @@ function openCoModal(id) {
       </div>
       ${!editing?.is_pco && editing?.analyzed_at ? `<div class="hint-banner" style="margin-top:4px; ${editing.signed ? '' : 'background:#fde8e8;border-color:#f5b5b5;'}">${editing.signed ? '✅ Fully executed — all signature blocks signed' : '⛔ NOT fully executed — blank signature block(s)'} — ${escapeHtml(editing.signature_summary || '')}${Array.isArray(editing.analysis?.signature_blocks) && editing.analysis.signature_blocks.length ? `<div style="margin-top:4px;">${editing.analysis.signature_blocks.map(b => `${b.signed ? '✅' : '⛔'} ${escapeHtml(b.role || 'Unknown party')}`).join(' &nbsp;·&nbsp; ')}</div>` : ''}${editing.analysis?.line_items?.length ? ` · ${editing.analysis.line_items.length} line item(s), total $${Number(editing.analysis.total||0).toLocaleString()}` : ''}</div>` : ''}
       ${!editing?.is_pco ? `<div class="hint-banner" style="margin-top:4px;">📝 Setting status to <strong>Approved</strong> requires the fully executed (signed) document. On save it is analyzed for signatures; only if signed does it get approved and roll into the SOV as itemized line(s).</div>` : ''}
+      ${!editing?.is_pco && isOwner() ? `<div class="form-row" style="margin-top:8px; border:1px solid rgba(239,68,68,0.35); border-radius:6px; padding:8px 10px; background:rgba(239,68,68,0.06);">
+        <label class="form-label" style="display:flex; align-items:center; gap:8px; margin-bottom:0; cursor:pointer;">
+          <input type="checkbox" id="co-sig-override" ${editing?.signature_override ? 'checked' : ''} onchange="coOverrideToggled()" style="width:auto; margin:0;" />
+          <span>🔓 Owner override — approve without all signatures</span>
+        </label>
+        <div id="co-sig-override-wrap" style="margin-top:8px; ${editing?.signature_override ? '' : 'display:none;'}">
+          <input type="text" id="co-sig-override-reason" maxlength="500" placeholder="Required — why is this being processed unsigned?" value="${escapeHtml(editing?.signature_override_reason || '')}" />
+          ${editing?.signature_override_by ? `<div class="text-muted text-sm" style="margin-top:4px;">Override recorded by <strong>${escapeHtml(editing.signature_override_by)}</strong>${editing.signature_override_at ? ' on ' + new Date(editing.signature_override_at).toLocaleString() : ''}</div>` : ''}
+          <div class="text-muted text-sm" style="margin-top:4px;">This does <strong>not</strong> mark the document signed. <code>signed</code> stays false, the CO carries an <strong>OVERRIDE</strong> flag with your reason, and replacing the document clears the override so the new file is re-verified on its own merits.</div>
+        </div>
+      </div>` : ''}
       ${editing && editing.status === 'approved' && !editing.is_pco && editing.applied_to_sov ? `<div class="hint-banner" style="margin-top:4px;">✓ Rolled into SOV v${editing.sov_version_applied}.</div>` : ''}
     `,
     footer: editing
@@ -5134,6 +6100,15 @@ function openCoModal(id) {
   });
 }
 window.openCoModal = openCoModal;
+
+// Show/hide the mandatory reason field with the override checkbox.
+function coOverrideToggled() {
+  const on = !!document.getElementById('co-sig-override')?.checked;
+  const wrap = document.getElementById('co-sig-override-wrap');
+  if (wrap) wrap.style.display = on ? '' : 'none';
+  if (on) document.getElementById('co-sig-override-reason')?.focus();
+}
+window.coOverrideToggled = coOverrideToggled;
 
 async function viewCoFile(id) {
   const co = DATA.changeOrders.find(c => c.id === id);
@@ -5186,6 +6161,17 @@ async function saveCo(id) {
   // refresh the analysis, but do NOT re-roll SOV lines (already applied).
   const replacingDocOnApproved = !!(id && !isPco && prior?.status === 'approved'
     && document.getElementById('co-file')?.files?.[0]);
+  // ---- Owner-only documented signature override (William, 2026-08-10) ----
+  // Some COs must be processed before every party signs (e.g. a credit CO squaring a
+  // duplicate payment). The gate stays; this is a deliberate, attributable exception.
+  // It never claims the document is signed — `signed` is left untouched.
+  const sigOverride = !!(isOwner() && document.getElementById('co-sig-override')?.checked);
+  const sigOverrideReason = (document.getElementById('co-sig-override-reason')?.value || '').trim();
+  if (sigOverride && !sigOverrideReason) {
+    toast('A written reason is required to override the signature requirement.', 'error');
+    document.getElementById('co-sig-override-reason')?.focus();
+    return;
+  }
   const data = {
     project_id: STATE.activeProjectId,
     co_number: Number(document.getElementById('co-number').value) || 1,
@@ -5193,6 +6179,12 @@ async function saveCo(id) {
     description: document.getElementById('co-desc').value.trim() || null,
     amount: Number(document.getElementById('co-amount').value) || 0,
     reason: document.getElementById('co-reason').value,
+    // Only send override columns when an override is actually involved, so ordinary
+    // CO saves keep working even before the override migration has been applied.
+    ...((sigOverride || prior?.signature_override) ? {
+      signature_override: sigOverride,
+      signature_override_reason: sigOverride ? sigOverrideReason : null,
+    } : {}),
     // Hold approval back at first write — the DB trigger rejects status='approved'
     // unless signed=true. We set it to approved only AFTER analysis confirms signatures.
     // Same for a doc swap on an already-approved CO: the new file resets signed=false,
@@ -5311,18 +6303,35 @@ async function saveCo(id) {
       return;
     }
     // 1. Analyze the executed document server-side: verify signatures + extract lines.
+    //    Under an owner override we still analyze — the extracted line items drive the
+    //    itemized SOV roll-in — but a failure or a blank block no longer blocks approval.
     if (btn) btn.innerHTML = '<span class="spinner"></span> Analyzing document…';
     let analysis;
     try {
       analysis = await analyzeCoDocument(savedId);
     } catch (e) {
-      toast('Document analysis failed: ' + (e?.message || e), 'error');
-      if (btn) { btn.disabled = false; btn.textContent = 'Save'; }
-      await loadAllData();
-      return;
+      if (!sigOverride) {
+        toast('Document analysis failed: ' + (e?.message || e), 'error');
+        if (btn) { btn.disabled = false; btn.textContent = 'Save'; }
+        await loadAllData();
+        return;
+      }
+      analysis = { signed: false, line_items: [], reconciles: null };
     }
-    // 2. Hard signature gate.
-    if (!analysis.signed) {
+    // 2. Hard signature gate — bypassed only by a documented owner override.
+    if (sigOverride && !analysis.signed) {
+      const blanks = (Array.isArray(analysis.unsigned_blocks) && analysis.unsigned_blocks.length)
+        ? analysis.unsigned_blocks.join(', ') : 'one or more blocks';
+      if (!confirm(`🔓 OWNER OVERRIDE — approve CO-${String(data.co_number).padStart(3,'0')} without all signatures?\n\n`
+        + `Blank/unsigned: ${blanks}\n\n`
+        + `Reason on record: “${sigOverrideReason}”\n\n`
+        + `The CO will be approved and rolled into the SOV. It will NOT be marked signed — it stays flagged as an override, attributed to you, and shows on the CO list and pay-app cross-reference. Replacing the document later clears the override.\n\nProceed?`)) {
+        toast('Override cancelled — nothing approved', 'info');
+        if (btn) { btn.disabled = false; btn.textContent = 'Save'; }
+        await loadAllData();
+        return;
+      }
+    } else if (!analysis.signed) {
       const missing = Array.isArray(analysis.unsigned_blocks) && analysis.unsigned_blocks.length
         ? ' Missing/blank: ' + analysis.unsigned_blocks.join(', ') + '.'
         : '';
@@ -5419,6 +6428,20 @@ async function rollCoIntoSov(projectId, coId, coData, lineItems) {
   const items = (Array.isArray(lineItems) ? lineItems : [])
     .map(li => ({ description: String(li?.description || '').trim(), amount: Number(li?.amount) || 0 }))
     .filter(li => li.description && Math.abs(li.amount) > 0.005);
+
+  // ---- SIGN RECONCILIATION (credit change orders) ----
+  // A credit CO writes its amounts in accounting parentheses — "(  $113,337.44 )".
+  // Document extractors routinely return that as a POSITIVE magnitude. Rolling it in
+  // unflipped would INCREASE the contract sum on a credit, i.e. the exact opposite of
+  // the intent, and would silently corrupt contract-sum-to-date on every later pay app.
+  // The TYPED CO amount is the authority for direction; the document supplies magnitude
+  // and itemization. If the two disagree in sign, flip the extracted lines to match.
+  const typedAmount = Number(coData.amount) || 0;
+  const extractedSum = items.reduce((s, li) => s + li.amount, 0);
+  if (typedAmount !== 0 && extractedSum !== 0
+      && Math.sign(extractedSum) !== Math.sign(typedAmount)) {
+    items.forEach(li => { li.amount = -li.amount; });
+  }
 
   if (items.length >= 2) {
     // Itemized: one SOV sub-line per extracted document line (CO-001.1, .2, ...).
@@ -6377,8 +7400,8 @@ function openAccessModal(contractorId) {
         <div class="form-row">
           <label class="form-label">Share Link</label>
           <div style="display:flex; gap:6px;">
-            <input id="ac-link" type="text" readonly value="${escapeHtml(tokenUrl(editing.access_token))}" />
-            <button class="btn btn-secondary" type="button" onclick="copyAccessLink('${escapeHtml(editing.access_token)}')">Copy</button>
+            <input id="ac-link" type="text" readonly value="Loading…" />
+            <button class="btn btn-secondary" type="button" onclick="copyAccessLinkFor('${escapeHtml(editing.id)}')">Copy</button>
           </div>
         </div>
       ` : ''}
@@ -6391,8 +7414,25 @@ function openAccessModal(contractorId) {
       : `<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
          <button class="btn btn-primary" id="save-ac-btn" onclick="generateAccessLink()">Generate Link</button>`,
   });
+
+  // The share link is fetched on demand — the token is not in DATA.contractors.
+  if (editing) {
+    fetchContractorToken(editing.id).then(token => {
+      const f = document.getElementById('ac-link');
+      if (!f) return;                       // modal closed already
+      f.value = token ? tokenUrl(token) : 'Unavailable — owner access required';
+    });
+  }
 }
 window.openAccessModal = openAccessModal;
+
+// Owner-only read of a single contractor's access_token. Enforced server-side by
+// plz_contractor_token(), which is SECURITY DEFINER and gated on plz_is_owner().
+async function fetchContractorToken(contractorId) {
+  const { data, error } = await sb.rpc('plz_contractor_token', { p_id: contractorId });
+  if (error) { handleSbError(error, 'Read access link'); return null; }
+  return data || null;
+}
 
 function makeToken() {
   const bytes = new Uint8Array(18);
@@ -6423,8 +7463,8 @@ async function generateAccessLink(contractorId) {
 
   let res, accessToken;
   if (contractorId) {
-    const existing = DATA.contractors.find(c => c.id === contractorId);
-    accessToken = existing?.access_token || makeToken();
+    // Editing never rotates the token, and we no longer hold it client-side.
+    accessToken = null;
     res = await sb.from('contractors').update({
       name, contact_email: email || null, contact_phone: phone || null,
       project_id: projectId, permissions,
@@ -6445,11 +7485,11 @@ async function generateAccessLink(contractorId) {
 
   await loadAllData();
   closeModal();
-  const url = tokenUrl(accessToken);
   toast(contractorId ? 'Access link updated' : 'Access link created');
 
   // For new links, show the URL in a follow-up modal so owner can copy it.
   if (!contractorId) {
+    const url = tokenUrl(accessToken);
     showModal({
       title: 'Share This Link',
       body: `
@@ -6512,6 +7552,14 @@ async function copyAccessLink(token) {
 }
 window.copyAccessLink = copyAccessLink;
 
+// Copy an existing contractor's link without ever holding the token in the DOM.
+async function copyAccessLinkFor(contractorId) {
+  const token = await fetchContractorToken(contractorId);
+  if (!token) { toast('No token to copy', 'error'); return; }
+  return copyAccessLink(token);
+}
+window.copyAccessLinkFor = copyAccessLinkFor;
+
 /* =========================================================================
    PHASE B — PROFILE (self, native users) + USERS (owner invite admin)
    ========================================================================= */
@@ -6525,6 +7573,7 @@ const FINALIZE_FN_URL = SUPABASE_URL + '/functions/v1/finalize-report';
 const QB_FN_URL       = SUPABASE_URL + '/functions/v1/qb-billing';
 const ANALYZE_CO_FN_URL = SUPABASE_URL + '/functions/v1/analyze-co';
 const ANALYZE_PAYAPP_FN_URL = SUPABASE_URL + '/functions/v1/analyze-payapp';
+const ANALYZE_DAILYLOG_FN_URL = SUPABASE_URL + '/functions/v1/analyze-dailylog';
 
 function myProfile() {
   if (!isNative() || !AUTH?.userId) return null;
@@ -6594,6 +7643,72 @@ async function saveProfile() {
   renderProfile();
 }
 window.saveProfile = saveProfile;
+
+/* -------------------------------------------------------------------------
+   Phone-number prompt (2026-09-13)
+   Members with no phone on file get no SMS from notify-activity / notify-route
+   / notify-task / the due-reminder cron — they silently fall back to email
+   only. Nudge them once a month to add one.
+
+   The "once a month" stamp lives in localStorage, not the profile row: adding
+   a column would need a migration + an RLS write path, and the worst failure
+   mode here is a second prompt on a second device. The stamp is written when
+   the modal is SHOWN, not when it's answered, so dismissing it by any route
+   (Not now / × / Esc / overlay) buys the same month and there is no nag loop.
+   ------------------------------------------------------------------------- */
+const PHONE_PROMPT_KEY    = (uid) => `pc_phone_prompt_${uid}`;
+const PHONE_PROMPT_EVERY  = 30 * 24 * 60 * 60 * 1000;  // ~1 month
+
+function phonePromptDue() {
+  if (!isNative() || !AUTH?.userId) return false;
+  const p = myProfile();
+  if (!p) return false;                              // own row not loaded — nothing to ask about
+  if (String(p.phone || '').trim()) return false;    // already has a number
+  let last = 0;
+  try { last = Number(localStorage.getItem(PHONE_PROMPT_KEY(AUTH.userId)) || 0); } catch (e) {}
+  return !last || (Date.now() - last) >= PHONE_PROMPT_EVERY;
+}
+
+function maybePromptForPhone() {
+  if (!phonePromptDue()) return;
+  // Never stomp a modal the user already has open (e.g. a deep-link route).
+  const root = document.getElementById('modalRoot');
+  if (root && root.innerHTML.trim()) return;
+
+  try { localStorage.setItem(PHONE_PROMPT_KEY(AUTH.userId), String(Date.now())); } catch (e) {}
+
+  showModal({
+    title: 'Add your mobile number',
+    body: `
+      <p style="margin:0 0 12px;">Plazacore can text you when something needs your
+      attention — an RFI routed to you, a task assigned, or a due date coming up.
+      Right now you only get email.</p>
+      <div class="form-row"><label class="form-label">Mobile number</label>
+        <input id="pp-phone" type="tel" placeholder="+13055551234" autocomplete="tel" />
+        <div class="text-sm text-muted" style="margin-top:4px;">E.164 format, e.g. +13055551234. Standard message rates apply. You can change or remove it any time under Profile.</div>
+      </div>`,
+    footer: `
+      <button class="btn btn-secondary" type="button" onclick="closeModal()">Not now</button>
+      <button class="btn btn-primary" type="button" onclick="savePromptedPhone()">Save number</button>`,
+  });
+  setTimeout(() => { try { document.getElementById('pp-phone')?.focus(); } catch (e) {} }, 50);
+}
+window.maybePromptForPhone = maybePromptForPhone;
+
+async function savePromptedPhone() {
+  const phone = (document.getElementById('pp-phone')?.value || '').trim();
+  if (!phone) { toast('Enter a number, or choose Not now', 'error'); return; }
+  if (!/^\+[1-9]\d{6,14}$/.test(phone)) {
+    toast('Phone must be E.164, e.g. +13055551234', 'error'); return;
+  }
+  const { error } = await sb.from('profiles').update({ phone }).eq('id', AUTH.userId);
+  if (error) { handleSbError(error, 'Saving phone number'); return; }
+  closeModal();
+  toast('Mobile number saved');
+  await reloadData('profiles');
+  if (STATE.activeTab === 'profile') renderProfile();
+}
+window.savePromptedPhone = savePromptedPhone;
 
 function renderAccessRequests() {
   const panel = document.getElementById('accessRequestsPanel');
@@ -7293,6 +8408,7 @@ document.getElementById('setPasswordForm')?.addEventListener('submit', async (e)
       const a = authFromNativeSession(fresh);
       if (a && a.role && a.role !== 'none') {
         AUTH = a;
+        if (a.role === 'contractor') AUTH.contractorId = await resolveNativeContractorId(a);
         // Clean the token fragment out of the address bar.
         try { history.replaceState({}, '', window.location.pathname); } catch (e) {}
         hideLogin();
@@ -7408,6 +8524,24 @@ function hideRequestAccess(e) {
 }
 window.hideRequestAccess = hideRequestAccess;
 
+/* Echo the typed number into the consent sentence. Two reasons this is not
+   cosmetic: the consumer sees exactly which number they are authorising, and
+   submitAccessRequest() captures #raSmsConsentText verbatim as consent
+   evidence — so the stored disclosure names the number that consented, which is
+   what an A2P 10DLC audit or a TCPA dispute actually turns on. */
+function raSyncConsentNumber() {
+  const echo = document.getElementById('raSmsNumberEcho');
+  if (!echo) return;
+  const raw = (document.getElementById('raPhone')?.value || '').trim();
+  const digits = raw.replace(/\D/g, '');
+  // Comma-delimited, not parenthesised: the number usually carries its own
+  // parentheses and "((305) 555-0123)" reads like a typo.
+  echo.textContent = digits.length >= 10 ? `, ${raw},` : '';
+}
+document.addEventListener('input', (e) => {
+  if (e.target && e.target.id === 'raPhone') raSyncConsentNumber();
+});
+
 let _raSubmitting = false;
 async function submitAccessRequest() {
   if (_raSubmitting) return;
@@ -7427,9 +8561,13 @@ async function submitAccessRequest() {
   // SMS consent is meaningless without a number to send to, and the RLS policy
   // rejects consent rows that lack one — catch it here with a clear message.
   if (smsConsent && phone.replace(/\D/g, '').length < 10) {
-    errEl.textContent = 'Enter a mobile number to receive text messages, or uncheck the SMS box.';
+    errEl.textContent = 'Enter the mobile number that should receive texts, or uncheck the box.';
+    document.getElementById('raPhone')?.focus();
     return;
   }
+  // Belt and braces: the disclosure must never be stored claiming a number the
+  // consumer did not give. If the echo somehow lags the field, resync it.
+  if (smsConsent) raSyncConsentNumber();
   // Store the disclosure exactly as displayed — this is the consent evidence.
   const consentText = smsConsent
     ? (document.getElementById('raSmsConsentText')?.innerText || '').replace(/\s+/g, ' ').trim()
@@ -7533,7 +8671,12 @@ async function loadNotifications() {
   // RLS already scopes SELECT to user_id = auth.uid() (or owner). Limit 30.
   const { data, error } = await sb
     .from('notifications')
-    .select('id, kind, title, body, link, ref_table, ref_id, read_at, created_at')
+    /* project_id is written by notify-activity on every row and was never
+       selected, so openNotification's "switch to the notification's project
+       first" branch could not fire: nf.project_id was always undefined. A
+       notification about another project opened its tab and modal while the
+       app stayed pointed at the project you were already in. */
+    .select('id, kind, title, body, link, ref_table, ref_id, project_id, read_at, created_at')
     .order('created_at', { ascending: false })
     .limit(30);
   if (error) {
@@ -7670,9 +8813,8 @@ async function openNotification(id) {
   // If the notification carries a project_id and it differs from the active one, switch first.
   if (nf.project_id && nf.project_id !== STATE.activeProjectId) {
     STATE.activeProjectId = nf.project_id;
-    const sel = document.getElementById('projectSelect');
-    if (sel) sel.value = nf.project_id;
-    render();
+    pswPushRecent(nf.project_id);
+    render();                      // repaints the switcher label with the rest
   }
 
   switchTab(route.tab);
@@ -7788,6 +8930,10 @@ async function init() {
 
   // Phase 4: flush any writes queued while offline, once we're authed + online.
   flushOutbox();
+
+  // Once a month, ask members with no phone on file to add one (SMS opt-in).
+  // Deferred so it lands after the first paint, never during boot.
+  setTimeout(() => { try { maybePromptForPhone(); } catch (e) {} }, 1500);
 }
 
 /* =========================================================================
@@ -9081,8 +10227,10 @@ async function openSearchResult(r) {
   if (r.project_id && r.project_id !== STATE.activeProjectId &&
       (DATA.projects || []).some(p => p.id === r.project_id)) {
     STATE.activeProjectId = r.project_id;
-    const sel = document.getElementById('projectSelect');
-    if (sel) sel.value = r.project_id;
+    pswPushRecent(r.project_id);
+    /* No render() on this path — without this the switcher would keep naming
+       the project you came from while every other tab had already moved. */
+    renderProjectSelect();
   }
   if (!r.file_path) { toast('No file on record for this result'); return; }
   const bucket = r.kind === 'document' ? 'plans-specs' : 'field-reports';
@@ -9850,6 +10998,8 @@ function renderDailyReports() {
   const ctxEl = document.getElementById('daily-context');
   if (ctxEl) ctxEl.innerHTML = proj ? `📌 ${escapeHtml(proj.code)} · ${escapeHtml(proj.name)}` : '';
 
+  renderDailyScans();
+
   const body = document.getElementById('dailyBody');
   if (!body) return;
   if (!proj) { body.innerHTML = ''; return; }
@@ -9886,6 +11036,269 @@ window.renderDailyReports = renderDailyReports;
 document.getElementById('dailySearch')?.addEventListener('input', e => {
   STATE.dailySearch = e.target.value; renderDailyReports();
 });
+
+/* ================= DAILY LOG SCANS =================
+   William, 2026-08-10: "upload a daily log scan, read it, document the visits, and
+   keep a copy of the PDF log for the record."
+
+   THE SCAN IS THE RECORD. The uploaded PDF is retained permanently and stays linked
+   to every entry extracted from it (daily_reports.source_document_id). The typed rows
+   are a searchable index over the scan, never a replacement for it — a field log can
+   be subpoenaed, and a transcription is not evidence.
+
+   One scan normally holds MANY visit days, so extraction returns an array and Apply
+   upserts per (project, date). Nothing is written until the user reviews and applies. */
+
+async function uploadDailyScan(input) {
+  const file = input?.files?.[0];
+  if (input) input.value = '';           // allow re-picking the same file later
+  if (!file) return;
+  if (!STATE.activeProjectId) { toast('Select a project first', 'error'); return; }
+  const ok = /\.(pdf|jpe?g|png)$/i.test(file.name);
+  if (!ok) { toast('Upload a PDF or photo (JPG/PNG) of the log', 'error'); return; }
+  if (file.size > 25 * 1024 * 1024) { toast('File must be < 25 MB', 'error'); return; }
+
+  const proj = getProject(STATE.activeProjectId);
+  const codePrefix = proj?.code || STATE.activeProjectId;
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const path = `${codePrefix}/daily/${Date.now()}_${safeName}`;
+
+  toast('Uploading log scan…', 'info');
+  const { error: upErr } = await sb.storage.from('field-reports').upload(path, file, { upsert: false });
+  if (upErr) { handleSbError(upErr, 'Upload log scan'); return; }
+
+  const { data: ins, error: insErr } = await sb.from('daily_log_documents').insert({
+    project_id: STATE.activeProjectId,
+    file_path: path,
+    file_name: file.name,
+    file_size: file.size,
+    uploaded_by: AUTH?.email || AUTH?.name || 'user',
+  }).select().maybeSingle();
+  if (insErr) {
+    // Don't orphan the object in the bucket if the row write is refused.
+    await sb.storage.from('field-reports').remove([path]).catch(() => {});
+    handleSbError(insErr, 'Save log scan');
+    return;
+  }
+
+  await reloadData('dailyLogDocs');
+  render();
+  toast('Scan stored. Reading it now…', 'success');
+  if (ins?.id) await analyzeDailyScan(ins.id);
+}
+window.uploadDailyScan = uploadDailyScan;
+
+async function analyzeDailyScan(docId) {
+  const btn = document.getElementById('dlAnalyzeBtn-' + docId);
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Reading…'; }
+  try {
+    if (!(await ensureFreshPrivilegedSession())) throw new Error('Session expired — sign in again.');
+    const res = await fetch(ANALYZE_DAILYLOG_FN_URL, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'apikey': SUPABASE_KEY,
+        'authorization': 'Bearer ' + (AUTH?.jwt || ''),
+      },
+      body: JSON.stringify({ doc_id: docId }),
+    });
+    let j = {};
+    try { j = await res.json(); } catch {}
+    if (!res.ok || j?.error) {
+      const map = {
+        analyzer_not_configured: 'Log reader not configured (missing CO_LLM_API_KEY).',
+        too_many_days: j?.message,
+        forbidden: 'You do not have permission to read log scans.',
+        llm_parse_failed: 'Could not read the scan reliably — try a clearer scan.',
+      };
+      throw new Error(map[j?.error] || j?.message || j?.error || ('HTTP ' + res.status));
+    }
+    await reloadData('dailyLogDocs');
+    render();
+    const n = (j.days || []).length;
+    if (!n) { toast('No daily-log days could be read from that scan', 'error'); return; }
+    toast(`Read ${n} day(s) — review before saving`, 'success');
+    reviewDailyScan(docId);
+  } catch (e) {
+    toast('Read failed: ' + (e?.message || e), 'error');
+    render();
+  }
+}
+window.analyzeDailyScan = analyzeDailyScan;
+
+// Review screen: every extracted day, editable date, with the existing-entry
+// collision called out per row. Nothing is written until Save is pressed.
+function reviewDailyScan(docId) {
+  const doc = (DATA.dailyLogDocs || []).find(d => d.id === docId);
+  if (!doc?.analysis?.days) { toast('Nothing extracted yet — read the scan first', 'info'); return; }
+  const days = doc.analysis.days;
+  const existing = new Map(
+    DATA.daily_reports.filter(d => d.project_id === doc.project_id)
+      .map(d => [d.report_date, d]));
+
+  const rows = days.map((d, i) => {
+    const clash = d.report_date ? existing.get(d.report_date) : null;
+    const lowConf = d.confidence > 0 && d.confidence < 0.6;
+    const bits = [];
+    if (d.visitors)  bits.push(`<div><strong>Visitors:</strong> ${escapeHtml(d.visitors)}</div>`);
+    if (d.inspector) bits.push(`<div><strong>Inspector:</strong> ${escapeHtml(d.inspector)}</div>`);
+    if (d.work_performed) bits.push(`<div class="text-muted">${escapeHtml(String(d.work_performed).slice(0, 160))}${String(d.work_performed).length > 160 ? '…' : ''}</div>`);
+    if (d.notes_for_reviewer) bits.push(`<div style="color:var(--amber);">⚠️ ${escapeHtml(d.notes_for_reviewer)}</div>`);
+    return `<tr${!d.report_date ? ' style="background:rgba(245,158,11,0.10);"' : ''}>
+      <td style="vertical-align:top;">
+        <input type="checkbox" id="dlrow-${i}" ${d.report_date ? 'checked' : ''} />
+      </td>
+      <td style="vertical-align:top;">
+        <input type="date" id="dldate-${i}" value="${escapeHtml(d.report_date || '')}" style="min-width:150px;" />
+        <div class="text-muted text-sm">p.${d.page || '?'}${lowConf ? ' · <span style="color:var(--amber);">hard to read</span>' : ''}</div>
+      </td>
+      <td class="text-sm" style="vertical-align:top;">${bits.join('') || '<span class="text-muted">—</span>'}</td>
+      <td class="text-sm" style="vertical-align:top;">${
+        clash ? `<span class="badge badge-yellow">Overwrites existing</span>`
+              : (d.report_date ? '<span class="badge badge-green">New</span>'
+                               : '<span class="badge badge-red">Needs a date</span>')}</td>
+    </tr>`;
+  }).join('');
+
+  const warn = (doc.analysis.warnings || []);
+  showModal({
+    title: `Review Extracted Days — ${escapeHtml(doc.file_name || 'log scan')}`,
+    wide: true,
+    body: `
+      ${warn.length ? `<div class="warn-banner">⚠️ <ul style="margin:4px 0 0 18px;">${warn.map(w => `<li>${escapeHtml(w)}</li>`).join('')}</ul></div>` : ''}
+      <div class="hint-banner">Read <strong>${days.length}</strong> day(s) from the scan. Verify each against the PDF before saving — this is a field record.
+        Undated rows cannot be saved until you set a date. Saving <strong>updates</strong> an existing entry for the same date rather than duplicating it.
+        <div style="margin-top:4px;">The scan itself is kept as the record of authority and stays linked to every entry.</div></div>
+      <div style="margin:8px 0;"><button class="btn btn-ghost btn-sm" onclick="viewDailyScan('${doc.id}')">📎 Open the scan</button></div>
+      <div class="table-wrap" style="max-height:440px;overflow:auto;">
+        <table class="data">
+          <thead><tr><th style="width:34px;">Save</th><th style="width:180px;">Date</th><th>Visits / Work</th><th style="width:150px;">Effect</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`,
+    footer: `<button class="btn btn-secondary" onclick="closeModal()">Cancel</button><div style="flex:1"></div>
+             <button class="btn btn-primary" onclick="applyDailyScan('${doc.id}')">Save Selected Days</button>`,
+  });
+}
+window.reviewDailyScan = reviewDailyScan;
+
+async function applyDailyScan(docId) {
+  const doc = (DATA.dailyLogDocs || []).find(d => d.id === docId);
+  if (!doc?.analysis?.days) return;
+  const days = doc.analysis.days;
+
+  const picked = [];
+  const undated = [];
+  for (let i = 0; i < days.length; i++) {
+    if (!document.getElementById('dlrow-' + i)?.checked) continue;
+    const date = document.getElementById('dldate-' + i)?.value || '';
+    if (!date) { undated.push(i + 1); continue; }
+    picked.push({ ...days[i], report_date: date });
+  }
+  if (undated.length) {
+    toast(`Row(s) ${undated.join(', ')} still need a date — set it or untick them`, 'error');
+    return;
+  }
+  if (!picked.length) { toast('No days selected', 'info'); return; }
+
+  // Two rows resolving to the same date would fight over one record.
+  const dates = picked.map(p => p.report_date);
+  const dupe = dates.find((d, i) => dates.indexOf(d) !== i);
+  if (dupe) { toast(`Two selected rows are both dated ${dupe} — fix one before saving`, 'error'); return; }
+
+  const rows = picked.map(p => ({
+    project_id: doc.project_id,
+    report_date: p.report_date,
+    inspector: p.inspector || null,
+    weather: p.weather || null,
+    temperature: p.temperature || null,
+    crew_count: Number.isFinite(p.crew_count) ? p.crew_count : 0,
+    work_performed: p.work_performed || null,
+    materials_delivered: p.materials_delivered || null,
+    equipment_on_site: p.equipment_on_site || null,
+    visitors: p.visitors || null,
+    delays: p.delays || null,
+    safety_incidents: p.safety_incidents || null,
+    notes: p.notes || null,
+    status: 'draft',
+    source_document_id: doc.id,
+    source_page: p.page || null,
+    extracted: true,
+  }));
+
+  // Upsert on (project_id, report_date) so re-applying a scan corrects the day
+  // instead of duplicating the field record.
+  const { error } = await sb.from('daily_reports')
+    .upsert(rows, { onConflict: 'project_id,report_date' });
+  if (error) { handleSbError(error, 'Save extracted days'); return; }
+
+  await reloadData('dailyReports', 'dashboard');
+  closeModal();
+  render();
+  toast(`Saved ${rows.length} day(s) from the scan`, 'success');
+}
+window.applyDailyScan = applyDailyScan;
+
+async function viewDailyScan(docId) {
+  const d = (DATA.dailyLogDocs || []).find(x => x.id === docId);
+  if (!d?.file_path) { toast('No file on record', 'error'); return; }
+  try { window.open(await signedUrl('field-reports', d.file_path), '_blank'); }
+  catch (e) { handleSbError(e, 'Open scan'); }
+}
+window.viewDailyScan = viewDailyScan;
+
+async function deleteDailyScan(docId) {
+  const d = (DATA.dailyLogDocs || []).find(x => x.id === docId);
+  if (!d) return;
+  const linked = DATA.daily_reports.filter(r => r.source_document_id === docId).length;
+  if (!confirm(`Delete this log scan?\n\n${d.file_name || ''}\n\n`
+    + (linked ? `${linked} log entr${linked === 1 ? 'y' : 'ies'} came from it. Those entries are KEPT — but they will no longer have the scan behind them, so the underlying record of authority is gone.\n\n` : '')
+    + 'This cannot be undone.')) return;
+  const { error } = await sb.from('daily_log_documents').delete().eq('id', docId);
+  if (error) { handleSbError(error, 'Delete scan'); return; }
+  await sb.storage.from('field-reports').remove([d.file_path]).catch(() => {});
+  await reloadData('dailyLogDocs', 'dailyReports');
+  render();
+  toast('Scan deleted', 'success');
+}
+window.deleteDailyScan = deleteDailyScan;
+
+function renderDailyScans() {
+  const el = document.getElementById('dailyScanList');
+  if (!el) return;
+  const proj = activeProject();
+  if (!proj) { el.innerHTML = ''; return; }
+  const list = (DATA.dailyLogDocs || []).filter(d => d.project_id === proj.id);
+  if (!list.length) { el.innerHTML = ''; return; }
+
+  el.innerHTML = `<div class="card" style="margin-bottom:12px;">
+    <div class="card-header" style="display:flex;align-items:center;gap:8px;">
+      <strong>📄 Log Scans on Record</strong>
+      <span class="text-muted text-sm">the uploaded PDF is the record of authority</span>
+    </div>
+    <div class="table-wrap"><table class="data"><tbody>
+      ${list.map(d => {
+        const n = (d.analysis?.days || []).length;
+        const linked = DATA.daily_reports.filter(r => r.source_document_id === d.id).length;
+        return `<tr>
+          <td class="text-sm"><strong>${escapeHtml(d.file_name || 'scan')}</strong>
+            <div class="text-muted">${fmtDate(d.uploaded_at)}${d.uploaded_by ? ' · ' + escapeHtml(d.uploaded_by) : ''}</div></td>
+          <td class="text-sm">${
+            d.analyzed_at
+              ? `${n} day(s) read · ${linked} saved${(d.analysis?.warnings || []).length ? ' · <span style="color:var(--amber);">has warnings</span>' : ''}`
+              : '<span class="text-muted">not read yet</span>'}</td>
+          <td style="width:330px;"><div class="row-actions" style="justify-content:flex-end;">
+            <button class="btn btn-ghost btn-sm" onclick="viewDailyScan('${d.id}')">📎 Open</button>
+            <button class="btn btn-secondary btn-sm" id="dlAnalyzeBtn-${d.id}" onclick="analyzeDailyScan('${d.id}')">${d.analyzed_at ? '🔄 Re-read' : '🔍 Read'}</button>
+            ${d.analyzed_at ? `<button class="btn btn-primary btn-sm" onclick="reviewDailyScan('${d.id}')">Review ${n}</button>` : ''}
+            ${isOwner() ? `<button class="btn btn-ghost btn-sm" onclick="deleteDailyScan('${d.id}')">🗑</button>` : ''}
+          </div></td>
+        </tr>`;
+      }).join('')}
+    </tbody></table></div>
+  </div>`;
+}
+window.renderDailyScans = renderDailyScans;
 
 function openDailyModal(id) {
   if (!STATE.activeProjectId) { toast('Select a project first'); return; }
